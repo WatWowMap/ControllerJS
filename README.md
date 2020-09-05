@@ -4,7 +4,7 @@ Device controller alternative to [RealDeviceMap](https://github.com/RealDeviceMa
 
 ## Prerequisites  
 - [MySQL 8](https://dev.mysql.com/downloads/mysql/) or [MariaDB 10](https://mariadb.org/download/) database server  
-- [Redis Server](https://redis.io/download) (Optional: For storing PvP ranks)  
+- [Redis Server](https://redis.io/download) 
 
 ## Installation  
 1.) Clone repository `git clone https://github.com/versx/ControllerJS`  
