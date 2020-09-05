@@ -1,0 +1,17 @@
+{
+    "host": "0.0.0.0",
+    "port": 9002,
+    "db": {
+        "host": "127.0.0.1",
+        "port": 3306,
+        "username": "user123",
+        "password": "pass123",
+        "database": "rdmdb",
+        "charset": "utf8mb4"
+    },
+    "redis": {
+        "host": "127.0.0.1",
+        "port": 6379,
+        "password": ""
+    }
+}

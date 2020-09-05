@@ -1,0 +1,28 @@
+{
+  "name": "controllerjs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "npx eslint src/**/*.js",
+    "test-fix": "npx eslint src/**/*.js --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/versx/ControllerJS.git"
+  },
+  "author": "versx",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/versx/ControllerJS/issues"
+  },
+  "homepage": "https://github.com/versx/ControllerJS#readme",
+  "dependencies": {
+    "@turf/turf": "^5.1.6",
+    "express": "^4.17.1",
+    "mysql": "^2.18.1",
+    "nodes2ts": "^2.0.0",
+    "redis": "^3.0.2"
+  }
+}
