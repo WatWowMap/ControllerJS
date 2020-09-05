@@ -15,8 +15,8 @@ Device controller alternative to [RealDeviceMap](https://github.com/RealDeviceMa
 6.) Point `backend_url` config property in [DeviceConfigManager](https://github.com/versx/DeviceConfigManager) to `http://dataparser_ip:9002`  
 7.) Import your existing `RDM` instances to your ControllerJS/DataParser `instances` table (replace testdb with database name and replace rdmdb with RDM's database name):  
 ```
-INSERT INTO testdb.instances (name, type, data)
-SELECT name type, data FROM rdmdb.instances;
+INSERT INTO testdb.instance (name, type, data)
+SELECT name type, data FROM rdmdb.instance;
 ```
 8.) Assign devices manually via DB or start RDM instance to controll via RDM UI for now.
 
