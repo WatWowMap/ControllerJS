@@ -29,7 +29,7 @@ class Instance {
         let results = await db.query(sql)
             .then(x => x)
             .catch(err => {
-                logger.error('[Instance] Error:', err);
+                console.error('[Instance] Error:', err);
                 return null;
             });
         let instances = [];
