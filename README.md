@@ -13,7 +13,7 @@ Device controller alternative to [RealDeviceMap](https://github.com/RealDeviceMa
 4.) Fill out config `vi src/config.json` (listening port, instances, db info, etc)  
 5.) Run `npm run start` (Database tables will be created if they don't exist)  
 6.) Point `backend_url` config property in [DeviceConfigManager](https://github.com/versx/DeviceConfigManager) to `http://dataparser_ip:9002`  
-7.) Import your existing `RDM` instances to your ControllerJS/DataParser `instances` table (replace testdb with database name):  
+7.) Import your existing `RDM` instances to your ControllerJS/DataParser `instances` table (replace testdb with database name and replace rdmdb with RDM's database name):  
 ```
 INSERT INTO testdb.instances (name, type, data)
 SELECT name type, data FROM rdmdb.instances;
