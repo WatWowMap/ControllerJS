@@ -58,5 +58,8 @@ SELECT name type, data FROM rdmdb.instances;
 1.) `git pull`  
 3.) `npm install`  
 
+## Current Issues  
+- IV instances occasionally get the same coordinates twice in a row  
+
 ## Discord  
 https://discordapp.com/invite/zZ9h9Xa  
