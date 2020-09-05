@@ -4,7 +4,7 @@ Device controller alternative to [RealDeviceMap](https://github.com/RealDeviceMa
 
 ## Prerequisites  
 - [MySQL 8](https://dev.mysql.com/downloads/mysql/) or [MariaDB 10](https://mariadb.org/download/) database server  
-- [Redis Server](https://redis.io/download) (Optional: For storing PvP ranks)  
+- [Redis Server](https://redis.io/download) 
 
 ## Installation  
 1.) Clone repository `git clone https://github.com/versx/ControllerJS`  
@@ -13,7 +13,7 @@ Device controller alternative to [RealDeviceMap](https://github.com/RealDeviceMa
 4.) Fill out config `vi src/config.json` (listening port, instances, db info, etc)  
 5.) Run `npm run start` (Database tables will be created if they don't exist)  
 6.) Point `backend_url` config property in [DeviceConfigManager](https://github.com/versx/DeviceConfigManager) to `http://dataparser_ip:9002`  
-7.) Import your existing `RDM` instances to your ControllerJS/DataParser `instances` table (replace testdb with database name):  
+7.) Import your existing `RDM` instances to your ControllerJS/DataParser `instances` table (replace testdb with database name and replace rdmdb with RDM's database name):  
 ```
 INSERT INTO testdb.instances (name, type, data)
 SELECT name type, data FROM rdmdb.instances;
