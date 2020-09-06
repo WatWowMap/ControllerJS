@@ -3,10 +3,12 @@
 const express = require('express');
 const router = express.Router();
 
+const AssignmentController = require('../controllers/assignment-controller.js');
 const InstanceController = require('../controllers/instance-controller.js');
 const defaultData = require('../data/default.js');
 const InstanceType = require('../data/instance-type.js');
 const Account = require('../models/account.js');
+const Assignment = require('../models/assignment.js');
 const Device = require('../models/device.js');
 const Instance = require('../models/instance.js');
 const Pokestop = require('../models/pokestop.js');
@@ -73,16 +75,55 @@ router.use('/assignments', (req, res) => {
     res.render('assignments', defaultData);
 });
 
-router.use('/assignment/add', (req, res) => {
+router.use('/assignment/add', async (req, res) => {
     if (req.method === 'POST') {
-        // TODO: Add new assignment
+        // Add new assignment
+        await addAssignmentPost(req, res);
     } else {
-        res.render('assignment-add', defaultData);
+        const data = defaultData;
+        let instances = [];
+        let devices = [];
+        try {
+            devices = await Device.getAll();
+            instances = await Instance.getAll();
+        } catch (err) {
+            console.error('[UI] Failed to get device and instance list:', err);
+            res.send('Internal Server Error');
+            return data;
+        }
+        let instancesData = [];
+        if (instances) {
+            instances.forEach(instance => {
+                instancesData.push({
+                    name: instance.name, 
+                    selected: false
+                });
+            });
+        }
+        data['instances'] = instancesData;
+        let devicesData = [];
+        if (devices) {
+            devices.forEach(device => {
+                devicesData.push({
+                    uuid: device.uuid,
+                    selected: false
+                });
+            });
+        }
+        data['devices'] = devicesData;
+        data['nothing_selected'] = true;
+        res.render('assignment-add', data);
     }
 });
 
-router.get('/assignment/delete', (req, res) => {
-    res.render('assignment-delete', defaultData);
+router.get('/assignment/delete/:id', async (req, res) => {
+    const id = req.params.id;
+    const split = id.split('-');
+    const instanceName = split[0];
+    const deviceUUID = split[1];
+    const time = split[2];
+    await Assignment.deleteById(deviceUUID, instanceName, time);
+    res.redirect('/assignments');
 });
 
 router.get('/assignment/start', (req, res) => {
@@ -145,6 +186,7 @@ router.use('/instance/add', async (req, res) => {
         const data = defaultData;
         data.spin_limit = 3500;
         data.iv_queue_limit = 100;
+        data.nothing_selected = true;
         res.render('instance-add', data);
     }
 });
@@ -242,7 +284,7 @@ router.use('/settings', (req, res) => {
     }
 });
 
-router.use('/clearquests', (req, res) => {
+router.use('/clearquests', async (req, res) => {
     if (req.method === 'POST') {
         await Pokestop.clearQuests();
         res.redirect('/');
@@ -449,6 +491,94 @@ const addInstancePost = async (req, res) => {
         }
     }
     res.redirect('/instances');
+};
+
+const addAssignmentPost = async (req, res) => {
+    let selectedDevice = req.body.device;
+    let selectedInstance = req.body.instance;
+    let time = req.body.time;
+    let onComplete = req.body.oncomplete;
+    let enabled = req.body.enabled;
+
+    let data = defaultData;
+    let instances = [];
+    let devices = [];
+    try {
+        devices = await Device.getAll();
+        instances = await Instance.getAll();
+    } catch {
+        res.send('Internal Server Error');
+        return data;
+    }
+
+    let instancesData = [];
+    instances.forEach(instance => {
+        instancesData.push({
+            name: instance.name,
+            selected: instance.name === selectedInstance
+        });
+    });
+    data['instances'] = instancesData;
+    let devicesData = [];
+    devices.forEach(device => {
+        devicesData.push({
+            uuid: device.uuid,
+            selected: device.uuid === selectedDevice
+        });
+    });
+    data['devices'] = devicesData;
+    data['time'] = time;
+
+    let timeInt;
+    if (!time) {
+        timeInt = 0;
+    } else {
+        let split = time.split(':');
+        if (split.length === 3) {
+            let hours = parseInt(split[0]);
+            let minutes = parseInt(split[1]);
+            let seconds = parseInt(split[2]);
+            let timeIntNew = hours * 3600 + minutes * 60 + seconds;
+            if (timeIntNew === 0) {
+                timeInt = 1;
+            } else {
+                timeInt = timeIntNew;
+            }
+        } else {
+            data['show_error'] = true;
+            data['error'] = 'Invalid Time.';
+            return data;
+        }
+    }
+
+    if (!selectedDevice || !selectedInstance) {
+        data['show_error'] = true;
+        data['error'] = 'Invalid Request.';
+        return data;
+    }
+    try {
+        let assignment = new Assignment(selectedInstance, selectedDevice, timeInt, enabled === 'on');
+        assignment.save();
+        AssignmentController.instance.addAssignment(assignment);
+    } catch {
+        data['show_error'] = true;
+        data['error'] = 'Failed to assign Device.';
+        return data;
+    }
+
+    if (onComplete === 'on') {
+        try {
+            let onCompleteAssignment = new Assignment(selectedInstance, selectedDevice, 0, true);
+            onCompleteAssignment.save();
+            AssignmentController.instance.addAssignment(onCompleteAssignment);
+        } catch (err) {
+            console.error('[UI] Failed to create new assignment:', err);
+            data['show_error'] = true;
+            data['error'] = 'Failed to assign Device.';
+            //return data;
+        }
+    }
+    res.redirect('/assignments');
 };
 
 module.exports = router;

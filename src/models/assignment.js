@@ -54,6 +54,38 @@ class Assignment {
         }
         return null;
     }
+
+    static async deleteById(deviceUUID, instanceName, time) {
+        let sql = `
+        DELETE FROM assignment
+        WHERE device_uuid = ? AND instance_name = ? AND time = ?
+        `;
+        let args = [deviceUUID, instanceName, time];
+        try {
+            let results = await db.query(sql, args);
+            //console.log('[Assignment] DeleteById:', results);
+        } catch (err) {
+            console.error('[Assignment] Error:', err);
+        }
+    }
+
+    async save() {
+        let sql = `
+        INSERT INTO assignment (device_uuid, instance_name, time, enabled) VALUES (?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+            device_uuid=VALUES(device_uuid),
+            instance_name=VALUES(instance_name),
+            time=VALUES(time),
+            enabled=VALUES(enabled)
+        `;
+        let args = [this.deviceUUID, this.instanceName, this.time, this.enabled];
+        try {
+            let results = await db.query(sql, args);
+            //console.log('[Instance] Save:', results);
+        } catch (err) {
+            console.error('[Assignment] Error:', err);
+        }
+    }
 }
 
 module.exports = Assignment;
