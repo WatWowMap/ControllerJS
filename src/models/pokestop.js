@@ -124,11 +124,8 @@ class Pokestop {
     }
 
     static async clearQuests(ids) {
-        if (!ids) {
-            return;
-        }
         let whereSQL = '';        
-        if (ids.length > 0) {
+        if (ids && ids.length > 0) {
             var inSQL = '(';
             for (let i = 0; i < ids.length; i++) {
                 inSQL += '?';

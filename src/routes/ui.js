@@ -9,6 +9,7 @@ const InstanceType = require('../data/instance-type.js');
 const Account = require('../models/account.js');
 const Device = require('../models/device.js');
 const Instance = require('../models/instance.js');
+const Pokestop = require('../models/pokestop.js');
 
 router.get(['/', '/index'], (req, res) => {
     res.render('index', defaultData);
@@ -232,8 +233,6 @@ router.use('/instance/edit/:name', async (req, res) => {
 });
 
 
-// TODO: instance/delete
-
 router.use('/settings', (req, res) => {
     if (req.method === 'POST') {
         // TODO: Update settings
@@ -244,7 +243,12 @@ router.use('/settings', (req, res) => {
 });
 
 router.use('/clearquests', (req, res) => {
-    res.render('clearquests', defaultData);
+    if (req.method === 'POST') {
+        await Pokestop.clearQuests();
+        res.redirect('/');
+    } else {
+        res.render('clearquests', defaultData);
+    }
 });
 
 const addInstancePost = async (req, res) => {
