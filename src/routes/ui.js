@@ -152,15 +152,80 @@ router.get('/assignment/start/:id', async (req, res) => {
     res.redirect('/assignments');
 });
 
-router.use('/assignment/edit/:name', (req, res) => {
+router.use('/assignment/edit/:id', async (req, res) => {
     if (req.method === 'POST') {
         // Save assignment
     } else {
-        // TODO: Pull assignment from db
-        res.render('assignment-edit', defaultData);
+        // Get assignment from database
+        let id = req.params.id;
+        let tmp = id.replace('\-', '-');
+        let split = tmp.split('-');
+        if (split.length !== 3) {
+            res.send('Bad Request');
+            return;
+        } else {
+            let selectedInstance = split[0].replace('&tmp', '\\-');
+            let selectedDevice = split[1].replace('&tmp', '\\-');
+            let time = parseInt(split[2] || 0);
+
+            let data = defaultData;
+            let instances = [];
+            let devices = [];
+            try {
+                devices = await Device.getAll();
+                instances = await Instance.getAll();
+            } catch {
+                res.send('Internal Server Error');
+                return data;
+            }
+
+            let instancesData = [];
+            instances.forEach(instance => {
+                instancesData.push({
+                    name: instance.name,
+                    selected: instance.name === selectedInstance
+                });
+            });
+            data['instances'] = instancesData;
+            let devicesData = [];
+            devices.forEach(device => {
+                devicesData.push({
+                    uuid: device.uuid,
+                    selected: device.uuid === selectedDevice
+                });
+            });
+            data['devices'] = devicesData;
+
+            let formattedTime;
+            if (time === 0) {
+                formattedTime = '';
+            } else {
+                let times = time;//moment(time).format('HH:mm:ss');//time.secondsToHoursMinutesSeconds()
+                formattedTime = times;//'\(String(format: '%02d', times.hours)):\(String(format: '%02d', times.minutes)):\(String(format: '%02d', times.seconds))'
+            }
+            data['time'] = formattedTime;
+            let assignment;
+            try {
+                assignment = await Assignment.getByUUID(selectedInstance, selectedDevice, time);
+            } catch {
+                res.send('Internal Server Error');
+                return data;
+            }
+            data['enabled'] = assignment.enabled ? 'checked' : '';
+            if (selectedDevice === '' || selectedInstance === '') {
+                data['show_error'] = true;
+                data['error'] = 'Invalid Request.';
+                return data;
+            }
+            res.render('assignment-edit', data);
+        }
     }
 });
 
+router.use('/assignment/delete_all', async (req, res) => {
+    await Assignment.deleteAll();
+    res.redirect('/assignments');
+});
 
 // Device routes
 router.get('/devices', (req, res) => {

@@ -69,6 +69,18 @@ class Assignment {
         }
     }
 
+    static async deleteAll() {
+        let sql = `
+        DELETE FROM assignment
+        `;
+        try {
+            let results = await db.query(sql);
+            //console.log('[Assignment] DeleteAll:', results);
+        } catch (err) {
+            console.error('[Assignment] Error:', err);
+        }
+    }
+
     async save() {
         let sql = `
         INSERT INTO assignment (device_uuid, instance_name, time, enabled) VALUES (?, ?, ?, ?)
