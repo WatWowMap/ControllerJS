@@ -12,8 +12,8 @@ const Assignment = require('../models/assignment.js');
 const Device = require('../models/device.js');
 const Instance = require('../models/instance.js');
 const Pokestop = require('../models/pokestop.js');
-const data = require('../data/default.js');
 
+// Main dashboard route
 router.get(['/', '/index'], (req, res) => {
     res.render('index', defaultData);
 });
@@ -26,45 +26,7 @@ router.get('/accounts', (req, res) => {
 
 router.use('/accounts/add', (req, res) => {
     if (req.method === 'POST') {
-        let level = parseInt(req.body.level || 0);
-        let accounts = req.body.accounts;
-        if (!accounts) {
-            data['show_error'] = true;
-            data['error'] = 'Invalid Request.';
-            res.redirect('/accounts');
-        }
-        accounts = accounts.replace('<br>', '')
-                           .replace('\r\n', '\n')
-                           .replace(';', ',')
-                           .replace(':', ',');
-
-        let data = req.body;
-        data['accounts'] = accounts;
-        data['level'] = level;
-
-        let accs = [];
-        let accountRows = accounts.split('\n');
-        for (let i = 0; i < accountRows.length; i++) {
-            let row = accountRows[i];
-            let split = row.split(',');
-            if (split.length === 2) {
-                let username = split[0].trim();
-                let password = split[1].trim();
-                accs.push(new Account(username, password, null, null, null, level, null, null, null, 0, 0, null, null, null, null, null, null, null));
-            }
-        }
-        if (accs.length === 0) {
-            data['show_error'] = true;
-            data['error'] = 'Failed to parse accounts.';
-        } else {
-            try {
-                accs.forEach(async acc => await acc.save(false));
-            } catch (err) {
-                data['show_error'] = true;
-                data['error'] = 'Failed to save accounts.';
-            }
-        }
-        res.redirect('/accounts');
+        addAccounts(req, res);
     } else {
         res.render('accounts-add', defaultData);
     }
@@ -155,6 +117,7 @@ router.get('/assignment/start/:id', async (req, res) => {
 router.use('/assignment/edit/:id', async (req, res) => {
     if (req.method === 'POST') {
         // Save assignment
+        await editAssignmentPost(req, res);
     } else {
         // Get assignment from database
         let id = req.params.id;
@@ -378,6 +341,49 @@ router.use('/clearquests', async (req, res) => {
         res.render('clearquests', defaultData);
     }
 });
+
+
+const addAccounts = (req, res) => {
+    let level = parseInt(req.body.level || 0);
+    let accounts = req.body.accounts;
+    if (!accounts) {
+        data['show_error'] = true;
+        data['error'] = 'Invalid Request.';
+        res.redirect('/accounts');
+    }
+    accounts = accounts.replace('<br>', '')
+                       .replace('\r\n', '\n')
+                       .replace(';', ',')
+                       .replace(':', ',');
+
+    let data = req.body;
+    data['accounts'] = accounts;
+    data['level'] = level;
+
+    let accs = [];
+    let accountRows = accounts.split('\n');
+    for (let i = 0; i < accountRows.length; i++) {
+        let row = accountRows[i];
+        let split = row.split(',');
+        if (split.length === 2) {
+            let username = split[0].trim();
+            let password = split[1].trim();
+            accs.push(new Account(username, password, null, null, null, level, null, null, null, 0, 0, null, null, null, null, null, null, null));
+        }
+    }
+    if (accs.length === 0) {
+        data['show_error'] = true;
+        data['error'] = 'Failed to parse accounts.';
+    } else {
+        try {
+            accs.forEach(async acc => await acc.save(false));
+        } catch (err) {
+            data['show_error'] = true;
+            data['error'] = 'Failed to save accounts.';
+        }
+    }
+    res.redirect('/accounts');
+};
 
 const addInstancePost = async (req, res) => {
     let data = {};
@@ -662,6 +668,71 @@ const addAssignmentPost = async (req, res) => {
             data['show_error'] = true;
             data['error'] = 'Failed to assign Device.';
             //return data;
+        }
+    }
+    res.redirect('/assignments');
+};
+
+const editAssignmentPost = async (req, res) => {
+    let selectedDevice = req.body.device;
+    let selectedInstance = req.body.instance;
+    let time = req.body.time;
+    let enabled = req.body.enabled;
+    let data = defaultData;
+    let timeInt;
+    if (!time) {
+        timeInt = 0;
+    } else {
+        let split = time.split(':');
+        if (split.length === 3) {
+            let hours = parseInt(split[0]);
+            let minutes = parseInt(split[1]);
+            let seconds = parseInt(split[2]);
+            let timeIntNew = hours * 3600 + minutes * 60 + seconds;
+            timeIntNew = timeIntNew === 0 ? 1 : timeIntNew;
+        } else {
+            data['show_error'] = true;
+            data['error'] = 'Invalid Time.';
+            return data;
+        }
+    }
+
+    if (!selectedDevice || !selectedInstance) {
+        data['show_error'] = true;
+        data['error'] = 'Invalid Request.';
+        return data;
+    }
+
+    let selectedUUID = req.body.old_name || '';
+    let tmp = selectedUUID.replace('\-', '-');
+    let split = tmp.split('-');
+    if (split.length !== 3) {
+        res.send('Bad Request');
+        return data;
+    } else {
+        let oldInstanceName = split[0].replace('&tmp', '\\-');
+        let oldDeviceUUID = split[1].replace('&tmp', '\\-');
+        let oldTime = parseInt(split[2] || 0);
+
+        let oldAssignment;
+        try {
+            oldAssignment = await Assignment.getByUUID(oldInstanceName, oldDeviceUUID, oldTime);
+        } catch (err) {
+            console.error(`[UI] Failed to retrieve existing assignment with id ${oldInstanceName}-${oldDeviceUUID}-${oldTime}:`, err);
+            res.send('Internal Server Error');
+            return data;
+        }
+
+        try {
+            let assignmentEnabled = enabled === 'on';
+            let newAssignment = new Assignment(selectedInstance, selectedDevice, timeInt, assignmentEnabled);
+            newAssignment.save(oldInstanceName, oldDeviceUUID, oldTime, assignmentEnabled);
+            AssignmentController.instance.editAssignment(oldAssignment, newAssignment);
+        } catch (err) {
+            console.error('[UI] Failed to save assignment:', err);
+            data['show_error'] = true;
+            data['error'] = 'Failed to assign Device.';
+            return data;
         }
     }
     res.redirect('/assignments');
