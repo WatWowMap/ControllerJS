@@ -12,6 +12,7 @@ const Assignment = require('../models/assignment.js');
 const Device = require('../models/device.js');
 const Instance = require('../models/instance.js');
 const Pokestop = require('../models/pokestop.js');
+const data = require('../data/default.js');
 
 router.get(['/', '/index'], (req, res) => {
     res.render('index', defaultData);
@@ -126,9 +127,29 @@ router.get('/assignment/delete/:id', async (req, res) => {
     res.redirect('/assignments');
 });
 
-router.get('/assignment/start', (req, res) => {
-    // TODO: Start assignment
-    res.render('assignment-start', defaultData);
+router.get('/assignment/start/:id', async (req, res) => {
+    let id = req.params.id;
+    let split = id.split('-');
+    if (split.length >= 2) {
+        let instanceName = split[0];
+        let deviceUUID = split[1];
+        let device;
+        try {
+            let dev = await Device.getById(deviceUUID);
+            if (!dev) {
+                res.send('Internal Server Error');
+                return;
+            }
+            device = dev;
+        } catch {
+            res.send('Internal Server Error');
+            return;
+        }
+        device.instanceName = instanceName;
+        await device.save(device.uuid);
+        InstanceController.instance.reloadDevice(device, deviceUUID);
+    }
+    res.redirect('/assignments');
 });
 
 router.use('/assignment/edit/:name', (req, res) => {
