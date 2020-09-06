@@ -71,18 +71,29 @@ class Instance {
                 console.error('[Instance] Error:', err);
                 return null;
             });
-        let instances = [];
-        if (results) {
-            for (let i = 0; i < results.length; i++) {
-                let result = results[i];
-                instances.push(new Instance(
-                    result.name,
-                    result.type,
-                    JSON.parse(result.data)
-                ));
-            }
+        if (results && results.length > 0) {
+            let result = results[0];
+            return new Instance(
+                result.name,
+                result.type,
+                JSON.parse(result.data)
+            );
         }
-        return instances;
+        return null;
+    }
+
+    static async deleteByName(name) {
+        let sql = `
+        DELETE FROM instance
+        WHERE name = ?
+        `;
+        let args = [name];
+        try {
+            let results = await db.query(sql, args);
+            //console.log('[Instance] DeleteByName:', results);
+        } catch (err) {
+            console.error('[Instance] Error:', err);
+        }
     }
 
     async save() {

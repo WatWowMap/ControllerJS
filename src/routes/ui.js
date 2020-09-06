@@ -148,14 +148,89 @@ router.use('/instance/add', async (req, res) => {
     }
 });
 
-router.use('/instance/edit/:name', (req, res) => {
+router.use('/instance/edit/:name', async (req, res) => {
+    const name = req.params.name;
     if (req.method === 'POST') {
-        // TODO: Save instance in db
+        if (req.body.delete) {
+            await Instance.deleteByName(name);
+            res.redirect('/instances');
+        } else {
+            await addInstancePost(req, res);
+        }
     } else {
-        // TODO: Pull instance from db
-        res.render('instance-edit', defaultData);
+        // Get instance from database
+        const data = defaultData;
+        const oldInstance = await Instance.getByName(name);
+        if (oldInstance) {
+            let areaString = '';
+            let oldInstanceData = oldInstance.data;
+            switch (oldInstance.type) {
+                case InstanceType.AutoQuest:
+                case InstanceType.PokemonIV:
+                    let areaType2 = oldInstanceData['area'];
+                    if (areaType2) {
+                        let index = 1;
+                        areaType2.forEach(geofence => {
+                            areaString += `[Geofence ${index}]\n`;
+                            index++;
+                            geofence.forEach(coordLine => {
+                                let lat = coordLine['lat'];
+                                let lon = coordLine['lon'];
+                                areaString += `${lat},${lon}\n`;
+                            });
+                        });
+                    }
+                    break;
+                default:
+                    let areaType1 = oldInstanceData['area'];
+                    if (areaType1) {
+                        areaType1.forEach(coordLine => {
+                            let lat = coordLine['lat'];
+                            let lon = coordLine['lon'];
+                            areaString += `${lat},${lon}\n`;
+                        });
+                    }
+                    break;
+            }
+
+            data['old_name'] = oldInstance.name;
+            data['name'] = oldInstance.name;
+            data['area'] = areaString;
+            data['min_level'] = oldInstanceData['min_level'] || 0;
+            data['max_level'] = oldInstanceData['max_level'] || 29;
+            data['timezone_offset'] = oldInstanceData['timezone_offset'] || 0;
+            data['iv_queue_limit'] = oldInstanceData['iv_queue_limit'] || 100;
+            data['spin_limit'] = oldInstanceData['spin_limit'] || 500;
+            let pokemonIDs = oldInstanceData['pokemon_ids'];
+            if (pokemonIDs) {
+                let text = pokemonIDs.join('\n');
+                data['pokemon_ids'] = text;
+            }
+            switch (oldInstance.type) {
+                case InstanceType.CirclePokemon:
+                    data['circle_pokemon_selected'] = true;
+                    break;
+                case InstanceType.CircleRaid:
+                    data['circle_raid_selected'] = true;
+                    break;
+                case InstanceType.SmartCircleRaid:
+                    data['circle_smart_raid_selected'] = true;
+                    break;
+                case InstanceType.AutoQuest:
+                    data['auto_quest_selected'] = true;
+                    break;
+                case InstanceType.PokemonIV:
+                    data['pokemon_iv_selected'] = true;
+                    break;
+                case InstanceType.GatherToken:
+                case InstanceType.Leveling:
+                    break;                
+            }
+        }
+        res.render('instance-edit', data);
     }
 });
+
 
 // TODO: instance/delete
 
@@ -174,6 +249,7 @@ router.use('/clearquests', (req, res) => {
 
 const addInstancePost = async (req, res) => {
     let data = {};
+    let instanceName = req.params.name;
     let name = req.body.name;
     let area = req.body.area
         .replace('<br>', '\n')
@@ -304,18 +380,19 @@ const addInstancePost = async (req, res) => {
         return data;
     }
 
-    // TODO: Update existing instance
-    let instanceName;
     if (instanceName) {
+        // Update existing instance
         let oldInstance;
         try {
             oldInstance = await Instance.getByName(instanceName);
-        } catch {
-            data['show_error'] = true;
-            data['error'] = 'Failed to update instance. Is the name unique?';
-            return data;
+        } catch (err) {
+            console.error('[UI] Failed to get existing instance with name:', instanceName);
+            //data['show_error'] = true;
+            //data['error'] = 'Failed to update instance. Is the name unique?';
+            //return data;
+            res.redirect('/instances');
         }
-        if (oldInstance === undefined || oldInstance === null) {
+        if (!oldInstance) {
             res.send('Instance Not Found');
             return data;
         } else {
@@ -334,7 +411,7 @@ const addInstancePost = async (req, res) => {
             }
             oldInstance.data = oldInstanceData;
             try {
-                await oldInstance.update(instanceName);
+                await oldInstance.save(instanceName);
             } catch (err) {
                 console.error('[UI] Failed to update existing instance:', err);
                 //data['show_error'] = true;
@@ -344,6 +421,7 @@ const addInstancePost = async (req, res) => {
             InstanceController.instance.reloadInstance(oldInstance, instanceName);
         }
     } else {
+        // Create new instance
         let instanceData = {};
         instanceData['area'] = newCoords;
         instanceData['timezone_offset'] = timezoneOffset;
@@ -355,7 +433,7 @@ const addInstancePost = async (req, res) => {
         } else if (type === InstanceType.AutoQuest) {
             instanceData['spin_limit'] = spinLimit;
         }
-        let instance = new Instance(name, type, instanceData);
+        
         try {
             await instance.save();
             InstanceController.instance.addInstance(instance);
