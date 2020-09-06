@@ -1,6 +1,7 @@
 'use strict';
 
 const AssignmentController = require('./assignment-controller.js');
+const InstanceType = require('../data/instance-type.js');
 const Device = require('../models/device.js');
 const Instance = require('../models/instance.js');
 const { AutoInstanceController, AutoType } = require('./instances/auto.js');
@@ -8,14 +9,6 @@ const { CircleInstanceController, CircleType } = require('./instances/circle.js'
 const IVInstanceController = require('./instances/iv.js');
 const RedisClient = require('../services/redis.js');
 const Pokemon = require('../models/pokemon.js');
-
-const InstanceType = {
-    CirclePokemon: 'circle_pokemon',
-    CircleRaid: 'circle_raid',
-    CircleSmartRaid: 'circle_smart_raid',
-    AutoQuest: 'auto_quest',
-    PokemonIV: 'pokemon_iv'
-};
 
 class InstanceController {
     static instance = new InstanceController();

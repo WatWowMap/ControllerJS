@@ -54,6 +54,52 @@ class Instance {
         }
         return instances;
     }
+
+    /**
+     * Get instance by name.
+     */
+    static async getByName(name) {
+        let sql = `
+        SELECT name, type, data
+        FROM instance
+        WHERE name = ?
+        `;
+        let args = [name];
+        let results = await db.query(sql, args)
+            .then(x => x)
+            .catch(err => {
+                console.error('[Instance] Error:', err);
+                return null;
+            });
+        let instances = [];
+        if (results) {
+            for (let i = 0; i < results.length; i++) {
+                let result = results[i];
+                instances.push(new Instance(
+                    result.name,
+                    result.type,
+                    JSON.parse(result.data)
+                ));
+            }
+        }
+        return instances;
+    }
+
+    async save() {
+        let sql = `
+        INSERT INTO instance (name, type, data) VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+            type=VALUES(type),
+            data=VALUES(data)
+        `;
+        let args = [this.name, this.type, JSON.stringify(this.data || {})];
+        try {
+            let results = await db.query(sql, args);
+            //console.log('[Instance] Save:', results);
+        } catch (err) {
+            console.error('[Instance] Error:', err);
+        }
+    }
 }
 
 module.exports = Instance;

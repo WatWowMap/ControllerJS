@@ -22,7 +22,7 @@
                 </select>
             </div>
             <div class="form-group">
-                Select Destinaction Instance
+                Select Destination Instance
                 <select class="form-control" name="instance" required>
                     <option value="" {{#nothing_selected}}selected{{/nothing_selected}} disabled hidden>Choose a Instance</option>
                     {{#instances}}
@@ -31,7 +31,7 @@
                 </select>
             </div>
             <div class="form-group">
-                Time (Emtpy for "On Complete")
+                Time (Empty for "On Complete")
                 <input type="text" class="form-control" name="time" value="{{time}}" minlength="7" maxlength="8" placeholder="HH:MM:SS">
             </div>
             <div class="form-check">
