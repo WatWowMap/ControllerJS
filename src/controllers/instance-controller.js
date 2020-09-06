@@ -59,6 +59,10 @@ class InstanceController {
     }
 
     getInstanceController(uuid) {
+        if (!this.devices[uuid]) {
+            console.error(`[InstanceController] [${uuid}] Not assigned an instance!`);
+            return;
+        }
         let device = this.devices[uuid];
         let instanceName = device.instanceName;
         if (!device && !instanceName) {

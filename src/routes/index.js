@@ -1,8 +1,8 @@
 'use strict';
 
+const InstanceController = require('../controllers/instance-controller.js');
 const Account = require('../models/account.js');
 const Device = require('../models/device.js');
-const InstanceController = require('../controllers/instance-controller.js');
 
 /**
  * RouteController class
@@ -15,6 +15,7 @@ class RouteController {
     constructor() {
     }
 
+    /* Controller routes */
     async handleControllerData(req, res) {
         let payload = req.body;
         let type = payload['type'];
