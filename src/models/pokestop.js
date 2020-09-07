@@ -124,21 +124,20 @@ class Pokestop {
     }
 
     static async clearQuests(ids) {
-        if (!ids) {
-            return;
-        }
-        let whereSQL = '';        
-        if (ids.length > 0) {
+        let whereSQL = '';
+        let args = [];
+        if (ids && ids.length > 0) {
             var inSQL = '(';
             for (let i = 0; i < ids.length; i++) {
                 inSQL += '?';
+                args.push(ids[i]);
                 if (i !== ids.length - 1) {
                     inSQL += ',';
                 }
             }
             inSQL += ')';
             whereSQL = `WHERE id IN ${inSQL}`;
-        }        
+        }
         let sql = `
             UPDATE pokestop
             SET quest_type = NULL, quest_timestamp = NULL, quest_target = NULL, quest_conditions = NULL, quest_rewards = NULL, quest_template = NULL

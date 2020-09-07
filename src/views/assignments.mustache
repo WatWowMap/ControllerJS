@@ -1,0 +1,60 @@
+{{> navbar}}
+
+<script>
+    $(document).ready(function() {
+        $('#table').DataTable( {
+            "ajax": {
+                "url": "/api/assignments",
+                "dataSrc": "data.assignments",
+                "type": "POST",
+                "_csrf": "{{csrf}}"
+            },
+            "paging":   true,
+            "lengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+            "columns": [
+                { "data": "instance_name" },
+                { "data": "device_uuid" },
+                { data: {
+                    _:    "time.formatted",
+                    sort: "time.timestamp"
+                } },
+                { "data": "enabled" },
+                { "data": "buttons" }
+            ],
+            "info":     true,
+            "order": [[ 2, "asc" ]],
+            "columnDefs": [ {
+                "targets": [4],
+                "orderable": false
+            }],
+            "search.caseInsensitive": true,
+            "responsive": true
+        });
+    } );
+</script>
+
+<body class="{{body_class}}">
+    <br>
+    <h1 align="center">Configure {{title}}'s Auto-Assignments!</h1>
+    <br>
+    <div style="width:90%; margin-left:calc(5%);">
+        <a href="/assignment/add" role="button" style="float: right;" class="btn btn-success">Add New Assignment</a>
+        <div style="width:50px; height:auto; display:inline;"></div>
+        <a href="/assignment/delete_all" role="button" style="float: right; margin-right:5px;" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete ALL of your auto-assignments? This action is irreversible and cannot be undone without backups.')">Delete All Assignments</a>
+        <br><br>
+        <table id="table" class="table {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width:100%">
+            <thead>
+            <tr>
+                <th>Instance Name</th>
+                <th>Device UUID</th>
+                <th>Time</th>
+                <th>Enabled</td>
+                <th width="5%"></th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <br>
+</body>
