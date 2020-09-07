@@ -48,7 +48,7 @@ router.post('/devices', async (req, res) => {
         //x.username = x.accountUsername;
         //x.instance = x.instanceName ? x.instanceName : '';
         x.last_seen = {
-            formatted: x.lastSeen,
+            formatted: new Date(x.lastSeen * 1000).toLocaleString(),
             sorted: x.lastSeen
         };
         x.last_lat = x.lastLat;
