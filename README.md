@@ -61,7 +61,8 @@ SELECT name, type, data FROM rdmdb.instance;
 ## Current Issues  
 - IV instances occasionally get the same coordinates twice in a row  
 - No polygon checks for IV instances, IV instances are currently `Global IV instances` per say  
-- Issue with /api/ returning data for assignments/instances/devices outside of scope (currently non-issue, defaultData)
+- Issue with /api/ returning data for assignments/instances/devices outside of scope (currently non-issue, defaultData)  
+- No status' for instances at the moment  
 
 ## Discord  
 https://discordapp.com/invite/zZ9h9Xa  
