@@ -13,10 +13,10 @@ const apiRoutes = require('./routes/api.js');
 const uiRoutes = require('./routes/ui.js');
 const routes = new RouteController();
 
+// TODO: Add instance status
 // TODO: Fix iv jobs sent twice sometimes
 // TODO: Polygon checks
 // TODO: Reload instances on change
-// TODO: ControllerUI
 // TODO: GotIV
 
 // View engine

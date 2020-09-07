@@ -19,10 +19,12 @@ router.post('/assignments', async (req, res) => {
             x.instance_name = x.instanceName;
             x.device_uuid = x.deviceUUID;
             let instanceUUID = `${x.instanceName}-${x.deviceUUID}-${x.time}`;
+            let time = new Date(x.time * 1000);
             x.time = {
-                formatted: x.time,
+                formatted: x.time === 0 ? 'On Complete' : zeroPad(parseInt(x.time / 3600), 2) + ':' + zeroPad(parseInt((x.time % 3600) / 60), 2) + ':' + zeroPad(parseInt((x.time % 3600) % 60), 2),
                 timestamp: x.time
             };
+            x.enabled = x.enabled ? 'Yes' : 'No';
             x.buttons = `
             <div class="btn-group" role="group">
                 <a href="assignment/start/${encodeURIComponent(instanceUUID)}" role="button" class="btn btn-success">Start</a>
@@ -46,7 +48,7 @@ router.post('/devices', async (req, res) => {
         //x.username = x.accountUsername;
         //x.instance = x.instanceName ? x.instanceName : '';
         x.last_seen = {
-            formatted: new Date(x.lastSeen * 1000).toLocaleString(),
+            formatted: x.lastSeen,
             sorted: x.lastSeen
         };
         x.last_lat = x.lastLat;
@@ -62,11 +64,12 @@ router.post('/instances', async (req, res) => {
     let instances = await Instance.getAll();
     instances.forEach(x => {
         x.status = '';
-        x.count = '';
         x.buttons = `<a href="/instance/edit/${encodeURIComponent(x.name)}" role="button" class="btn btn-primary">Edit Instance</a>`;
     });
     data.instances = instances;
     res.json({ data: data });
 });
+
+const zeroPad = (num, places) => String(num).padStart(places, '0');
 
 module.exports = router;

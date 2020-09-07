@@ -31,7 +31,6 @@ class Instance {
             FROM device
             GROUP BY instance_name
         ) devices ON (inst.name = devices.instance_name)
-
         `;
         let results = await db.query(sql)
             .then(x => x)
@@ -47,7 +46,7 @@ class Instance {
                     result.name,
                     result.type,
                     JSON.parse(result.data),
-                    result.count
+                    result.count || 0
                 );
                 instances.push(instance);
             }
