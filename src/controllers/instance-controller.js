@@ -222,6 +222,14 @@ class InstanceController {
             }
         }
     }
+
+    getIVQueue(name) {
+        if (this.instances[name]) {
+            const instance = this.instances[name];
+            return instance.getQueue();
+        }
+        return [];
+    }
 }
 
 module.exports = InstanceController;

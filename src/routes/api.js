@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const i18n = require('i18n');
 const router = express.Router();
 
 const defaultData = require('../data/default.js');
@@ -77,6 +78,27 @@ router.post('/instances', async (req, res) => {
     }
     data.instances = instances;
     res.json({ data: data });
+});
+
+router.get('/ivqueue/:name', async (req, res) => {
+    const name = req.params.name;
+    const queue = InstanceController.instance.getIVQueue(name);
+    const data = defaultData;
+    data.instance_name = name;
+    let ivqueue = [];
+    for (let i = 0; i < queue.length; i++) {
+        let pokemon = queue[i];
+        ivqueue.push({
+            id: i + 1,
+            pokemon_image: `<img src="/static/img/pokemon/${pokemon.pokemonId}.png" style="height:50px; width:50px;">`,
+            pokemon_name: i18n.__('poke_' + pokemon.pokemon_id) || '',
+            pokemon_id: pokemon.pokemon_id,
+            pokemon_spawn_id: pokemon.id,
+            location: `${pokemon.lat},${pokemon.lon}`
+        });
+    }
+    data.data = { ivqueue };
+    res.render('instance-ivqueue', data);
 });
 
 const zeroPad = (num, places) => String(num).padStart(places, '0');

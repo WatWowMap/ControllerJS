@@ -100,7 +100,7 @@ class CircleInstanceController {
                 if (!startup) {
                     if (shouldAdvance) {
                         currentUuidIndex++;
-                        if (currentUuidIndex >= this.coords.length) {
+                        if (currentUuidIndex >= this.coords.length - 1) {
                             currentUuidIndex = 0;
                             // This is an approximation of round time.
                             this.lastLastCompletedTime = this.lastCompletedTime;
@@ -133,7 +133,7 @@ class CircleInstanceController {
         let last = this.lastCompletedTime;
         let time = new Date(lastLast);
         if (lastLast && last && time) {
-            return `Round Time: ${time}s`;
+            return `Round Time: ${time.getSeconds() + (time.getMinutes() * 60) + (time.getHours() * 3600)}s`;
         }
         return '-';
     }
