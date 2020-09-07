@@ -16,20 +16,23 @@ router.post('/assignments', async (req, res) => {
     let assignments = await Assignment.getAll();
     if (assignments.length > 0) {
         assignments.forEach(x => {
+            x.source_instance_name = x.sourceInstanceName;
             x.instance_name = x.instanceName;
             x.device_uuid = x.deviceUUID;
-            let instanceUUID = `${x.instanceName}-${x.deviceUUID}-${x.time}`;
-            let time = new Date(x.time * 1000);
             x.time = {
                 formatted: x.time === 0 ? 'On Complete' : zeroPad(parseInt(x.time / 3600), 2) + ':' + zeroPad(parseInt((x.time % 3600) / 60), 2) + ':' + zeroPad(parseInt((x.time % 3600) % 60), 2),
                 timestamp: x.time
             };
+            x.date = {
+                formatted: (x.date || '').toLocaleString(),
+                timestamp: x.date ? x.date.getTime() : 0
+            };
             x.enabled = x.enabled ? 'Yes' : 'No';
             x.buttons = `
             <div class="btn-group" role="group">
-                <a href="assignment/start/${encodeURIComponent(instanceUUID)}" role="button" class="btn btn-success">Start</a>
-                <a href="/assignment/edit/${encodeURIComponent(instanceUUID)}" role="button" class="btn btn-primary">Edit</a>
-                <a href="/assignment/delete/${encodeURIComponent(instanceUUID)}" role="button" class="btn btn-danger">Delete</a>
+                <a href="assignment/start/${x.id}" role="button" class="btn btn-success">Start</a>
+                <a href="/assignment/edit/${x.id}" role="button" class="btn btn-primary">Edit</a>
+                <a href="/assignment/delete/${x.id}" role="button" class="btn btn-danger">Delete</a>
             </div>
             `;
         });

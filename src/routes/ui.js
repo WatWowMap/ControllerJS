@@ -59,7 +59,8 @@ router.use('/assignment/add', async (req, res) => {
             instances.forEach(instance => {
                 instancesData.push({
                     name: instance.name, 
-                    selected: false
+                    selected: false,
+                    selected_source: false
                 });
             });
         }
@@ -75,42 +76,31 @@ router.use('/assignment/add', async (req, res) => {
         }
         data['devices'] = devicesData;
         data['nothing_selected'] = true;
+        data['nothing_selected_source'] = true;
         res.render('assignment-add', data);
     }
 });
 
 router.get('/assignment/delete/:id', async (req, res) => {
     const id = req.params.id;
-    const split = id.split('-');
-    const instanceName = split[0];
-    const deviceUUID = split[1];
-    const time = split[2];
-    await Assignment.deleteById(deviceUUID, instanceName, time);
+    try {
+        await Assignment.deleteById(id);
+    } catch (err) {
+        console.error('Failed to delete assignment with id:', id);
+    }
     res.redirect('/assignments');
 });
 
 router.get('/assignment/start/:id', async (req, res) => {
     let id = req.params.id;
-    let split = id.split('-');
-    if (split.length >= 2) {
-        let instanceName = split[0];
-        let deviceUUID = split[1];
-        let device;
-        try {
-            let dev = await Device.getById(deviceUUID);
-            if (!dev) {
-                res.send('Internal Server Error');
-                return;
-            }
-            device = dev;
-        } catch {
-            res.send('Internal Server Error');
-            return;
-        }
-        device.instanceName = instanceName;
-        await device.save(device.uuid);
-        InstanceController.instance.reloadDevice(device, deviceUUID);
+    let assignment;
+    try {
+        assignment = await Assignment.getById(id);
+    } catch (err) {
+        console.error('Failed to get assignment by id:', id, err);
+        return;
     }
+    await InstanceController.instance.triggerAssignment(assignment, true);
     res.redirect('/assignments');
 });
 
@@ -121,67 +111,58 @@ router.use('/assignment/edit/:id', async (req, res) => {
     } else {
         // Get assignment from database
         let id = req.params.id;
-        let tmp = id.replace('\-', '-');
-        let split = tmp.split('-');
-        if (split.length !== 3) {
-            res.send('Bad Request');
+        let assignment;
+        try {
+            assignment = await Assignment.getById(id);
+        } catch (err) {
+            console.error('Failed to get assignment with id:', id);
             return;
-        } else {
-            let selectedInstance = split[0].replace('&tmp', '\\-');
-            let selectedDevice = split[1].replace('&tmp', '\\-');
-            let time = parseInt(split[2] || 0);
-
-            let data = defaultData;
-            let instances = [];
-            let devices = [];
-            try {
-                devices = await Device.getAll();
-                instances = await Instance.getAll();
-            } catch {
-                res.send('Internal Server Error');
-                return data;
-            }
-
-            let instancesData = [];
-            instances.forEach(instance => {
-                instancesData.push({
-                    name: instance.name,
-                    selected: instance.name === selectedInstance
-                });
-            });
-            data['instances'] = instancesData;
-            let devicesData = [];
-            devices.forEach(device => {
-                devicesData.push({
-                    uuid: device.uuid,
-                    selected: device.uuid === selectedDevice
-                });
-            });
-            data['devices'] = devicesData;
-
-            let formattedTime;
-            if (time === 0) {
-                formattedTime = '';
-            } else {
-                let times = time;//moment(time).format('HH:mm:ss');//time.secondsToHoursMinutesSeconds()
-                formattedTime = times;//'\(String(format: '%02d', times.hours)):\(String(format: '%02d', times.minutes)):\(String(format: '%02d', times.seconds))'
-            }
-            data['time'] = formattedTime;
-            let assignment;
-            try {
-                assignment = await Assignment.getByUUID(selectedInstance, selectedDevice, time);
-            } catch {
-                res.send('Internal Server Error');
-                return data;
-            }
-            data['enabled'] = assignment.enabled ? 'checked' : '';
-            if (selectedDevice === '' || selectedInstance === '') {
-                data['show_error'] = true;
-                data['error'] = 'Invalid Request.';
-                return data;
-            }
-            res.render('assignment-edit', data);
         }
+
+        let data = defaultData;
+        let instances = [];
+        let devices = [];
+        try {
+            devices = await Device.getAll();
+            instances = await Instance.getAll();
+        } catch {
+            res.send('Internal Server Error');
+            return data;
+        }
+
+        let instancesData = [];
+        instances.forEach(instance => {
+            instancesData.push({
+                name: instance.name,
+                selected: instance.name === assignment.instanceName,
+                selected_source: instance.name === assignment.sourceInstanceName
+            });
+        });
+        data['instances'] = instancesData;
+        let devicesData = [];
+        devices.forEach(device => {
+            devicesData.push({
+                uuid: device.uuid,
+                selected: device.uuid === assignment.deviceUUID
+            });
+        });
+        data['devices'] = devicesData;
+
+        let formattedTime;
+        if (assignment.time === 0) {
+            formattedTime = '';
+        } else {
+            formattedTime = assignment.time;//'\(String(format: '%02d', times.hours)):\(String(format: '%02d', times.minutes)):\(String(format: '%02d', times.seconds))'
+        }
+        data['time'] = formattedTime;
+        data['date'] = assignment.date;
+        data['enabled'] = assignment.enabled ? 'checked' : '';
+        if (!assignment.deviceUUID || !assignment.instanceName) {
+            data['show_error'] = true;
+            data['error'] = 'Invalid Request.';
+            return data;
+        }
+        res.render('assignment-edit', data);
     }
 });
 
@@ -324,6 +305,7 @@ router.use('/instance/edit/:name', async (req, res) => {
 });
 
 
+// Miscellaneous routes
 router.use('/settings', (req, res) => {
     if (req.method === 'POST') {
         // TODO: Update settings
@@ -588,7 +570,9 @@ const addInstancePost = async (req, res) => {
 const addAssignmentPost = async (req, res) => {
     let selectedDevice = req.body.device;
     let selectedInstance = req.body.instance;
+    let selectedSourceInstance = req.body.source_instance;
     let time = req.body.time;
+    let date = req.body.date;
     let onComplete = req.body.oncomplete;
     let enabled = req.body.enabled;
 
@@ -603,6 +587,7 @@ const addAssignmentPost = async (req, res) => {
         return data;
     }
 
+    /*/
     let instancesData = [];
     instances.forEach(instance => {
         instancesData.push({
@@ -620,6 +605,7 @@ const addAssignmentPost = async (req, res) => {
     });
     data['devices'] = devicesData;
     data['time'] = time;
+    */
 
     let timeInt;
     if (!time) {
@@ -643,13 +629,26 @@ const addAssignmentPost = async (req, res) => {
         }
     }
 
+    let realDate = null;
+    if (date) {
+        realDate = new Date(date);
+    }
+
     if (!selectedDevice || !selectedInstance) {
         data['show_error'] = true;
         data['error'] = 'Invalid Request.';
         return data;
     }
     try {
-        let assignment = new Assignment(selectedInstance, selectedDevice, timeInt, enabled === 'on');
+        let assignment = new Assignment(
+            null,
+            selectedInstance,
+            selectedSourceInstance,
+            selectedDevice,
+            timeInt,
+            realDate,
+            enabled === 'on'
+        );
         assignment.save();
         AssignmentController.instance.addAssignment(assignment);
     } catch {
@@ -660,8 +659,16 @@ const addAssignmentPost = async (req, res) => {
 
     if (onComplete === 'on') {
         try {
-            let onCompleteAssignment = new Assignment(selectedInstance, selectedDevice, 0, true);
-            onCompleteAssignment.save();
+            let onCompleteAssignment = new Assignment(
+                null,
+                selectedInstance,
+                selectedSourceInstance,
+                selectedDevice,
+                0,
+                realDate,
+                true
+            );
+            await onCompleteAssignment.save();
             AssignmentController.instance.addAssignment(onCompleteAssignment);
         } catch (err) {
             console.error('[UI] Failed to create new assignment:', err);
@@ -676,7 +683,9 @@ const addAssignmentPost = async (req, res) => {
 const editAssignmentPost = async (req, res) => {
     let selectedDevice = req.body.device;
     let selectedInstance = req.body.instance;
+    let selectedSourceInstance = req.body.source_instance;
     let time = req.body.time;
+    let date = req.body.date;
     let enabled = req.body.enabled;
     let data = defaultData;
     let timeInt;
@@ -697,6 +706,11 @@ const editAssignmentPost = async (req, res) => {
         }
     }
 
+    let realDate = null;
+    if (date) {
+        realDate = new Date(date);
+    }
+
     if (!selectedDevice || !selectedInstance) {
         data['show_error'] = true;
         data['error'] = 'Invalid Request.';
@@ -704,36 +718,34 @@ const editAssignmentPost = async (req, res) => {
     }
 
     let selectedUUID = req.body.old_name || '';
-    let tmp = selectedUUID.replace('\-', '-');
-    let split = tmp.split('-');
-    if (split.length !== 3) {
-        res.send('Bad Request');
+    let id = selectedUUID;
+    let oldAssignment;
+    try {
+        oldAssignment = await Assignment.getById(id);
+    } catch (err) {
+        console.error(`[UI] Failed to retrieve existing assignment with id ${oldInstanceName}-${oldDeviceUUID}-${oldTime}:`, err);
+        res.send('Internal Server Error');
         return data;
-    } else {
-        let oldInstanceName = split[0].replace('&tmp', '\\-');
-        let oldDeviceUUID = split[1].replace('&tmp', '\\-');
-        let oldTime = parseInt(split[2] || 0);
+    }
 
-        let oldAssignment;
-        try {
-            oldAssignment = await Assignment.getByUUID(oldInstanceName, oldDeviceUUID, oldTime);
-        } catch (err) {
-            console.error(`[UI] Failed to retrieve existing assignment with id ${oldInstanceName}-${oldDeviceUUID}-${oldTime}:`, err);
-            res.send('Internal Server Error');
-            return data;
-        }
-
-        try {
-            let assignmentEnabled = enabled === 'on';
-            let newAssignment = new Assignment(selectedInstance, selectedDevice, timeInt, assignmentEnabled);
-            newAssignment.save(oldInstanceName, oldDeviceUUID, oldTime, assignmentEnabled);
-            AssignmentController.instance.editAssignment(oldAssignment, newAssignment);
-        } catch (err) {
-            console.error('[UI] Failed to save assignment:', err);
-            data['show_error'] = true;
-            data['error'] = 'Failed to assign Device.';
-            return data;
-        }
+    try {
+        let assignmentEnabled = enabled === 'on';
+        let newAssignment = new Assignment(
+            id,
+            selectedInstance,
+            selectedSourceInstance,
+            selectedDevice,
+            realDate,
+            timeInt,
+            assignmentEnabled
+        );
+        await newAssignment.save(id);
+        AssignmentController.instance.editAssignment(oldAssignment, newAssignment);
+    } catch (err) {
+        console.error('[UI] Failed to save assignment:', err);
+        data['show_error'] = true;
+        data['error'] = 'Failed to assign Device.';
+        return data;
     }
     res.redirect('/assignments');
 };

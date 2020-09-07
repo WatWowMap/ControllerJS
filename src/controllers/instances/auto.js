@@ -80,6 +80,7 @@ class AutoInstanceController {
         this.allStops = [];
         this.todayStops = [];
         this.todayStopsTries = {};
+        this.doneDate = null;
 
         this.update()
             .then(x => x)
@@ -162,6 +163,7 @@ class AutoInstanceController {
                 }
                 this.todayStops = [];
                 this.todayStopsTries = {};
+                this.doneDate = null;
                 for (let i = 0; i < this.allStops.length; i++) {
                     let stop = this.allStops[i];
                     if (!stop.questType && stop.enabled) {

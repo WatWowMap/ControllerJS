@@ -64,29 +64,27 @@ class AssignmentController {
         }
     }
 
-    async triggerAssignment(assignment) {
+    async triggerAssignment(assignment, force = false) {
+        if (!(force || (assignment.enabled && (!assignment.date || new Date(assignment.date) === new Date())))) {
+            return;
+        }
         let device;
-        let done = false;
         try {
             device = await Device.getById(assignment.deviceUUID);
-            done = true;
         } catch (err) {
             console.error('[AssignmentController] Error:', err);
             // TODO: Sleep 1 second
         }
         if (device && device.instanceName !== assignment.instanceName) {
-            console.log(`[AssignmentController] Assigning ${assignment.deviceUUID} to ${assignment.instanceName}`);
+            console.log(`[AssignmentController] Assigning device ${device.uuid} to ${assignment.instanceName}`);
             InstanceController.instance.removeDevice(device);
             device.instanceName = assignment.instanceName;
-            done = false;
-            //while !done {
-                try {
-                    await device.save(device.uuid);
-                    done = true;
-                } catch {
-                    // TODO: Sleep 1 second
-                }
-            //}
+            try {
+                await device.save(device.uuid);
+            } catch (err) {
+                console.error('[AssignmentController] Failed to update device', device.uuid, 'assignment with instance name:', assignment.instanceName);
+                // TODO: Sleep 1 second
+            }
             InstanceController.instance.addDevice(device);
         }
     }
