@@ -196,6 +196,20 @@ class InstanceController {
         return uuids;
     }
 
+    async getInstanceStatus(instance) {
+        if (this.instances[instance.name]) {
+            try {
+                const status = await this.instances[instance.name].getStatus();
+                return status;
+            } catch (err) {
+                console.error('[InstanceController] Failed to get instance status for instance:', instance.name);
+                return 'ERROR';
+            }
+        } else {
+            return 'Starting...';
+        }
+    }
+
     gotPokemon(pokemon) {
         for (let inst in this.instances) {
             let instObj = this.instances[inst];

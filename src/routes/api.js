@@ -7,6 +7,7 @@ const defaultData = require('../data/default.js');
 const Assignment = require('../models/assignment.js');
 const Device = require('../models/device.js');
 const Instance = require('../models/instance.js');
+const InstanceController = require('../controllers/instance-controller.js');
 
 router.post('/accounts', async (req, res) => {
 });
@@ -46,18 +47,19 @@ router.post('/assignments', async (req, res) => {
 router.post('/devices', async (req, res) => {
     const data = defaultData;
     let devices = await Device.getAll();
-    devices.forEach(x => {
-        //x.host = x.lastHost;
-        //x.username = x.accountUsername;
-        //x.instance = x.instanceName ? x.instanceName : '';
-        x.last_seen = {
-            formatted: new Date(x.lastSeen * 1000).toLocaleString(),
-            sorted: x.lastSeen
-        };
-        x.last_lat = x.lastLat;
-        x.last_lon = x.lastLon;
-        x.buttons = `<a href="/device/assign/${encodeURIComponent(x.uuid)}" role="button" class="btn btn-primary">Assign Instance</a>`;
-    });
+    if (devices.length > 0) {
+        for (let i = 0; i < devices.length; i++) {
+            let device = devices[i];
+            //x.host = x.lastHost;
+            //x.username = x.accountUsername;
+            //x.instance = x.instanceName ? x.instanceName : '';
+            device.last_seen = {
+                formatted: new Date(device.lastSeen * 1000).toLocaleString(),
+                sorted: device.lastSeen
+            };
+            device.buttons = `<a href="/device/assign/${encodeURIComponent(device.uuid)}" role="button" class="btn btn-primary">Assign Instance</a>`;
+        }
+    }
     data.devices = devices;
     res.json({ data: data });
 });
@@ -65,10 +67,14 @@ router.post('/devices', async (req, res) => {
 router.post('/instances', async (req, res) => {
     const data = defaultData;
     let instances = await Instance.getAll();
-    instances.forEach(x => {
-        x.status = '';
-        x.buttons = `<a href="/instance/edit/${encodeURIComponent(x.name)}" role="button" class="btn btn-primary">Edit Instance</a>`;
-    });
+    if (instances.length > 0) {
+        for (let i = 0; i < instances.length; i++) {
+            let instance = instances[i];
+            instance.type = Instance.fromString(instance.type);
+            instance.status = await InstanceController.instance.getInstanceStatus(instance);
+            instance.buttons = `<a href="/instance/edit/${encodeURIComponent(instance.name)}" role="button" class="btn btn-primary">Edit Instance</a>`;
+        }
+    }
     data.instances = instances;
     res.json({ data: data });
 });
