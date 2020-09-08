@@ -242,14 +242,10 @@ class AutoInstanceController {
                     if (this.todayStops.length === 0) {
                         let ids = this.allStops.map(x => x.id);
                         let newStops = [];
-                        let done = false;
-                        while (!done) {
-                            try {
-                                newStops = await Pokestop.getByIds(ids);
-                                done = true;
-                            } catch (err) {
-                                console.error('[AutoInstanceController] Failed to get list of Pokestops with ids:', err);
-                            }
+                        try {
+                            newStops = await Pokestop.getByIds(ids);
+                        } catch (err) {
+                            console.error('[AutoInstanceController] Failed to get list of Pokestops with ids:', err);
                         }
 
                         for (let i = 0; i < newStops.length; i++) {
@@ -383,7 +379,6 @@ class AutoInstanceController {
                         let newStops = [];
                         try {
                             newStops = await Pokestop.getByIds(ids);
-                            done = true;
                         } catch (err) {
                             console.error('[AutoInstanceController] Failed to get list of Pokestops by ids:', err);
                         }
