@@ -1,3 +1,4 @@
+![Node.js CI](https://github.com/versx/ControllerJS/workflows/Node.js%20CI/badge.svg)
 # ControllerJS  
 
 Device controller alternative to [RealDeviceMap](https://github.com/RealDeviceMap/RealDeviceMap) `/controler` endpoint  
@@ -60,7 +61,6 @@ SELECT name, type, data FROM rdmdb.instance;
 
 ## Current Issues  
 - IV instances occasionally get the same coordinates twice in a row  
-- No polygon checks for IV instances, IV instances are currently `Global IV instances` per say  
 
 ## Discord  
 https://discordapp.com/invite/zZ9h9Xa  
