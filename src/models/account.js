@@ -287,6 +287,72 @@ class Account {
         return stats;
     }
 
+    static async getStatCounts() {
+        let sql = `
+        SELECT 
+            SUM(spins >= 3500) AS spin_limit_count,
+            SUM(
+                last_encounter_time IS NOT NULL
+                AND UNIX_TIMESTAMP() - CAST(last_encounter_time AS SIGNED INTEGER) < 7200
+            ) AS cooldown_count,
+            SUM(failed IS NULL AND first_warning_timestamp IS NOT NULL) AS warned_count,
+            SUM(failed IS NOT NULL) AS failed_count,
+            SUM(
+                level >= 30
+                AND level <= 40
+                AND first_warning_timestamp IS NULL
+                AND failed IS NULL
+            ) AS good_iv_count,
+            SUM(level >= 30) AS iv_count,
+            SUM(failed='banned' AND failed_timestamp >= UNIX_TIMESTAMP(NOW() - INTERVAL 1 DAY)) as banned_1day,
+            SUM(failed='banned' AND failed_timestamp >= UNIX_TIMESTAMP(NOW() - INTERVAL 7 DAY)) as banned_7days,
+            SUM(failed='banned') as banned_total,
+            SUM(first_warning_timestamp >= UNIX_TIMESTAMP(NOW() - INTERVAL 1 DAY)) as warning_1day,
+            SUM(first_warning_timestamp >= UNIX_TIMESTAMP(NOW() - INTERVAL 7 DAY)) as warning_7days,
+            SUM(first_warning_timestamp IS NOT NULL) as warning_total
+        FROM account;
+        `;
+        let results = await db.query(sql);
+        if (results && results.length > 0) {
+            const result = results[0];
+            result.banned_1day = result.banned_1day || 0;
+            result.banned_7days = result.banned_7days || 0;
+            result.banned_total = result.banned_total || 0;
+            result.warning_1day = result.warning_1day || 0;
+            result.warning_7days = result.warning_7days || 0;
+            result.warning_total = result.warning_total || 0;
+            return result;
+        }
+        return null;
+    }
+
+    static async getDeviceAccountStats() {
+        let sql = `
+        SELECT
+            SUM(
+                first_warning_timestamp is NULL
+                AND failed_timestamp is NULL 
+                AND device.uuid IS NULL
+                AND failed IS NULL
+                AND (
+                    last_encounter_time IS NULL
+                    OR UNIX_TIMESTAMP() - CAST(last_encounter_time AS SIGNED INTEGER) >= 7200
+                    AND spins < 400
+                )
+            ) AS new_count,
+            SUM(device.uuid IS NOT NULL) AS in_use_count
+        FROM account
+        LEFT JOIN device ON username = account_username
+            
+        `;
+        let results = await db.query(sql);
+        if (results && results.length > 0) {
+            const result = results[0];
+            return result;
+        }
+        return null;
+    }
+
     /**
      * Save account.
      */

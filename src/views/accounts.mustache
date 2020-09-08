@@ -31,7 +31,7 @@
             <div class="col-md-3 p-1">
               <div class="list-group">
                 <a class="list-group-item">
-                  <h4 class="list-group-item-heading" style="color: dodgerblue;">{{new_accounts_count}}</h4>
+                  <h4 class="list-group-item-heading" style="color: dodgerblue;">{{stat_device_counts.new_count}}</h4>
                   <p class="list-group-item-text">New Accounts</p>
                 </a>
               </div>
@@ -39,7 +39,7 @@
             <div class="col-md-3 p-1">
               <div class="list-group">
                 <a class="list-group-item">
-                  <h4 class="list-group-item-heading" style="color: limegreen;">{{in_use_accounts_count}}</h4>
+                  <h4 class="list-group-item-heading" style="color: limegreen;">{{stat_device_counts.in_use_count}}</h4>
                   <p class="list-group-item-text">Accounts in Use</p>
                 </a>
               </div>
@@ -47,7 +47,7 @@
             <div class="col-md-3 p-1">
               <div class="list-group">
                 <a class="list-group-item">
-                  <h4 class="list-group-item-heading" style="color: teal;">{{good_ivs_count}}</h4>
+                  <h4 class="list-group-item-heading" style="color: teal;">{{stat_counts.good_iv_count}}</h4>
                   <p class="list-group-item-text">Clean Level 30 Accounts</p>
                 </a>
               </div>
@@ -55,7 +55,7 @@
             <div class="col-md-3 p-1">
               <div class="list-group">
                 <a class="list-group-item">
-                  <h4 class="list-group-item-heading" style="color: dodgerblue;">{{iv_accounts_count}}</h4>
+                  <h4 class="list-group-item-heading" style="color: dodgerblue;">{{stat_counts.iv_count}}</h4>
                   <p class="list-group-item-text">Total over Level 30</p>
                 </a>
               </div>
@@ -65,7 +65,7 @@
             <div class="col-md-3 p-1">
               <div class="list-group">
                 <a class="list-group-item">
-                  <h4 class="list-group-item-heading" style="color: red;">{{failed_accounts_count}}</h4>
+                  <h4 class="list-group-item-heading" style="color: red;">{{stat_counts.failed_count}}</h4>
                   <p class="list-group-item-text">Failed Accounts</p>
                 </a>
               </div>
@@ -73,7 +73,7 @@
             <div class="col-md-3 p-1">
               <div class="list-group">
                 <a class="list-group-item">
-                  <h4 class="list-group-item-heading" style="color: orange;">{{warned_accounts_count}}</h4>
+                  <h4 class="list-group-item-heading" style="color: orange;">{{stat_counts.warned_count}}</h4>
                   <p class="list-group-item-text">Total with Warning</p>
                 </a>
               </div>
@@ -81,7 +81,7 @@
             <div class="col-md-3 p-1">
               <div class="list-group">
                 <a class="list-group-item">
-                  <h4 class="list-group-item-heading" style="color: orange;">{{cooldown_accounts_count}}</h4>
+                  <h4 class="list-group-item-heading" style="color: orange;">{{stat_counts.cooldown_count}}</h4>
                   <p class="list-group-item-text">Total in Cooldown</p>
                 </a>
               </div>
@@ -89,7 +89,7 @@
             <div class="col-md-3 p-1">
               <div class="list-group">
                 <a class="list-group-item">
-                  <h4 class="list-group-item-heading" style="color: orange;">{{spin_limit_accounts_count}}</h4>
+                  <h4 class="list-group-item-heading" style="color: orange;">{{stat_counts.spin_limit_count}}</h4>
                   <p class="list-group-item-text">Over Spin Limit</p>
                 </a>
               </div>
@@ -109,7 +109,7 @@
                 <div class="col-md-4 p-1">
                   <div class="list-group">
                     <a class="list-group-item">
-                      <h4 class="list-group-item-heading" style="color: red;">{{banned_7days}}</h4>
+                      <h4 class="list-group-item-heading" style="color: red;">{{stat_counts.banned_1day}}</h4>
                       <p class="list-group-item-text">Last 24 Hours</p>
                     </a>
                   </div>
@@ -117,7 +117,7 @@
                 <div class="col-md-4 p-1">
                   <div class="list-group">
                     <a class="list-group-item">
-                      <h4 class="list-group-item-heading" style="color: red;">{{banned_14days}}</h4>
+                      <h4 class="list-group-item-heading" style="color: red;">{{stat_counts.banned_7days}}</h4>
                       <p class="list-group-item-text">Last 7 Days</p>
                     </a>
                   </div>
@@ -125,7 +125,7 @@
                 <div class="col-md-4 p-1">
                   <div class="list-group">
                     <a class="list-group-item">
-                      <h4 class="list-group-item-heading" style="color: red;">{{banned_30days}}</h4>
+                      <h4 class="list-group-item-heading" style="color: red;">{{stat_counts.banned_total}}</h4>
                       <p class="list-group-item-text">Total</p>
                     </a>
                   </div>
@@ -144,7 +144,7 @@
                 <div class="col-md-4 p-1">
                   <div class="list-group">
                     <a class="list-group-item">
-                      <h4 class="list-group-item-heading" style="color: orange;">{{warning_7days}}</h4>
+                      <h4 class="list-group-item-heading" style="color: orange;">{{stat_counts.warning_1day}}</h4>
                       <p class="list-group-item-text">Last 24 Hours</p>
                     </a>
                   </div>
@@ -152,7 +152,7 @@
                 <div class="col-md-4 p-1">
                   <div class="list-group">
                     <a class="list-group-item">
-                      <h4 class="list-group-item-heading" style="color: orange;">{{warning_14days}}</h4>
+                      <h4 class="list-group-item-heading" style="color: orange;">{{stat_counts.warning_7days}}</h4>
                       <p class="list-group-item-text">Last 7 Days</p>
                     </a>
                   </div>
@@ -160,7 +160,7 @@
                 <div class="col-md-4 p-1">
                   <div class="list-group">
                     <a class="list-group-item">
-                      <h4 class="list-group-item-heading" style="color: orange;">{{warning_30days}}</h4>
+                      <h4 class="list-group-item-heading" style="color: orange;">{{stat_counts.warning_total}}</h4>
                       <p class="list-group-item-text">Total</p>
                     </a>
                   </div>

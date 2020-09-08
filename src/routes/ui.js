@@ -23,6 +23,8 @@ router.get('/accounts', async (req, res) => {
     // TODO: Provide account info
     const data = defaultData;
     data.stats = await Account.getStats();
+    data.stat_counts = await Account.getStatCounts();
+    data.stat_device_counts = await Account.getDeviceAccountStats();
     res.render('accounts', data);
 });
 
@@ -304,6 +306,13 @@ router.use('/instance/edit/:name', async (req, res) => {
         }
         res.render('instance-edit', data);
     }
+});
+
+router.get('/instance/ivqueue/:name', (req, res) => {
+    const instanceName = req.params.name;
+    const data = defaultData;
+    data.instance_name = instanceName;
+    res.render('instance-ivqueue', data);
 });
 
 
