@@ -753,8 +753,8 @@ const editAssignmentPost = async (req, res) => {
             selectedInstance,
             selectedSourceInstance,
             selectedDevice,
-            realDate,
             timeInt,
+            realDate,
             assignmentEnabled
         );
         await newAssignment.save(id);
