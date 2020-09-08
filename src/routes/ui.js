@@ -19,9 +19,11 @@ router.get(['/', '/index'], (req, res) => {
 });
 
 // Account routes
-router.get('/accounts', (req, res) => {
+router.get('/accounts', async (req, res) => {
     // TODO: Provide account info
-    res.render('accounts', defaultData);
+    const data = defaultData;
+    data.stats = await Account.getStats();
+    res.render('accounts', data);
 });
 
 router.use('/accounts/add', (req, res) => {

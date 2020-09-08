@@ -240,6 +240,53 @@ class Account {
         //console.log('[Account] Spin:', result);
     }
 
+    static async getStats() {
+        let sql = `
+        SELECT
+            a.level AS level,
+            COUNT(level) AS total,
+            SUM(failed IS NULL AND first_warning_timestamp IS NULL) AS good,
+            SUM(failed = 'banned') AS banned,
+            SUM(first_warning_timestamp IS NOT NULL) AS warning,
+            SUM(failed = 'invalid_credentials') AS invalid_creds,
+            SUM(failed != 'banned' AND failed != 'invalid_credentials') AS other,
+            SUM(last_encounter_time IS NOT NULL AND UNIX_TIMESTAMP() - CAST(last_encounter_time AS SIGNED INTEGER) < 7200) AS cooldown,
+            SUM(spins >= 500) AS spin_limit,
+            (SELECT count(username) FROM device as d LEFT JOIN accounts_dashboard as ad ON ad.username = d.account_username WHERE a.level = ad.level) AS in_use
+        FROM account AS a
+        GROUP BY level
+        ORDER BY level DESC
+        `;
+        let results = await db.query(sql);        
+        let stats = [];
+        for (let i = 0; i < results.length; i++) {
+            let result = results[i];
+            let level = result.level || 0;
+            let total = result.total || 0;
+            let good = result.good || 0;
+            let banned = result.banned || 0;
+            let warning = result.warning || 0;
+            let invalid = result.invalid_creds || 0;
+            let other = result.other || 0;
+            let cooldown = result.cooldown || 0;
+            let spinLimit = result.spin_limit || 0;
+            let inUse = result.in_use || 0;
+            stats.push({
+                "level": level,
+                "total": total,
+                "good": good,
+                "banned": banned,
+                "warning": warning,
+                "invalid": invalid,
+                "other": other,
+                "cooldown": cooldown,
+                "spin_limit": spinLimit,
+				"in_use": inUse,
+            });
+        }
+        return stats;
+    }
+
     /**
      * Save account.
      */
