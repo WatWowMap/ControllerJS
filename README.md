@@ -18,7 +18,7 @@ Device controller alternative to [RealDeviceMap](https://github.com/RealDeviceMa
 INSERT INTO testdb.instance (name, type, data)
 SELECT name, type, data FROM rdmdb.instance;
 ```
-8.) Assign devices manually via DB or start RDM instance to controll via RDM UI for now.
+8.) Visit `http://controllerip:9002` to add accounts, assign devices, or manage instances and auto-assignments  
 
 ## Configuration
 ```js
