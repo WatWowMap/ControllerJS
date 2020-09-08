@@ -170,18 +170,18 @@ class InstanceController {
         }
     }
 
-    removeDevice(device) {
-        this.removeDeviceByName(device.uuid);
+    async removeDevice(device) {
+        await this.removeDeviceByName(device.uuid);
     }
 
-    reloadDevice(newDevice, oldDeviceUUID) {
-        this.removeDeviceByName(oldDeviceUUID);
+    async reloadDevice(newDevice, oldDeviceUUID) {
+        await this.removeDeviceByName(oldDeviceUUID);
         this.addDevice(newDevice);
     }
 
-    removeDeviceByName(name) {
+    async removeDeviceByName(name) {
         /*delete*/ this.devices[name] = null;
-        AssignmentController.instance.setup();
+        await AssignmentController.instance.setup();
     }
 
     getDeviceUUIDsInInstance(instanceName) {

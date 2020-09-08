@@ -102,7 +102,7 @@ class RouteController {
 
     async handleHeartbeat(req, res, uuid) {
         try {
-            const host = ((req.headers['x-forwarded-for'] || '').split(', ')[0]) || (req.connection.remoteAddress || req.connection.localAddress).match('[0-9]+.[0-9].+[0-9]+.[0-9]+$')[0];
+            const host = (req.headers['x-forwarded-for'] || '').split(', ')[0] || (req.connection.remoteAddress || req.connection.localAddress).match('[0-9]+.[0-9].+[0-9]+.[0-9]+$')[0];
             await Device.touch(uuid, host, false);
             sendResponse(res, 'ok', null);
         } catch (err) {

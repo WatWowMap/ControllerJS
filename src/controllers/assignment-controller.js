@@ -76,7 +76,7 @@ class AssignmentController {
         }
         if (device && device.instanceName !== assignment.instanceName) {
             console.log(`[AssignmentController] Assigning device ${device.uuid} to ${assignment.instanceName}`);
-            InstanceController.instance.removeDevice(device);
+            await InstanceController.instance.removeDevice(device);
             device.instanceName = assignment.instanceName;
             try {
                 await device.save(device.uuid);
