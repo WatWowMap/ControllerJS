@@ -9,6 +9,25 @@
                 "type": "POST",
                 "_csrf": "{{csrf}}"
             },
+            //"dom": "Bfrtip",
+            // Reference: https://stackoverflow.com/a/43176143
+            /*
+            "dom": "<'row'<'col-sm-8'B><'col-sm-4'f>t>" +
+                   "<'row'<'col-sm-4'li><'col-sm-8'p>>",
+            */
+            "dom": "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
+                   "<'row'<'col-sm-12'tr>>" +
+                   "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            "fixedHeader": {
+                "header": true,
+                "headerOffset": $('.navbar').height() + 15
+            },
+            "buttons": [
+                "colvis",
+                "pageLength"
+            ],
+            "colReorder": true,
+            "stateSave": true,
             "paging":   true,
             "lengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
             "columns": [
@@ -47,12 +66,12 @@
         <table id="table" class="table {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width:100%">
             <thead>
             <tr>
-                <th>UUID</th>
-                <th>Username</th>
-                <th>Instance</th>
-                <th>Host</th>
-                <th>Last Seen</th>
-                <th width="5%"></th>
+                <th class="all">UUID</th>
+                <th class="min-desktop">Username</th>
+                <th class="all">Instance</th>
+                <th class="min-desktop">Host</th>
+                <th class="min-desktop">Last Seen</th>
+                <th class="all" width="5%"></th>
             </tr>
             </thead>
             <tbody>

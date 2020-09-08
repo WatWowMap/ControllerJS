@@ -146,6 +146,48 @@ class Pokestop {
         let results = await db.query(sql, args);
         console.log('[Pokestop] ClearQuests:', results);
     }
+
+    static async getQuestCountIn(ids) {
+        if (ids.length > 10000) {
+            let result = 0;
+            let count = parseInt(Math.ceil(ids.length / 10000.0));
+            for (let i = 0; i < count; i++) {
+                let start = 10000 * i;
+                let end = Math.min(10000 * (i + 1) - 1, ids.length - 1);
+                let slice = ids.slice(start, end);
+                let sliceResult = await this.getQuestCountIn(slice);
+                if (sliceResult.length > 0) {
+                    sliceResult.forEach(x => result += x);
+                }
+            }
+            return result;
+        }
+
+        if (ids.length === 0) {
+            return 0;
+        }
+
+        let inSQL = '(';
+        for (let i = 0; i < ids.length; i++) {
+            inSQL += '?';
+            if (i !== ids.length - 1) {
+                inSQL += ',';
+            }
+        }
+        inSQL += ')';
+
+        let sql = `
+            SELECT COUNT(*) AS count
+            FROM pokestop
+            WHERE id IN ${inSQL} AND deleted = false AND quest_reward_type IS NOT NULL
+        `;
+        let results = await db.query(sql, ids);
+        if (results && results.length > 0) {
+            const result = results[0];
+            return result.count;
+        }
+        return 0;
+    }
 }
 
 module.exports = Pokestop;

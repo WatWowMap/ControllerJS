@@ -12,16 +12,19 @@ class Assignment {
     /**
      * Initalize new Assignment object.
      */
-    constructor(instanceName, deviceUUID, time = 0, enabled = true) {
+    constructor(id, instanceName, sourceInstanceName, deviceUUID, time = 0, date = null, enabled = true) {
+        this.id = id;
         this.instanceName = instanceName;
+        this.sourceInstanceName = sourceInstanceName;
         this.deviceUUID = deviceUUID;
         this.time = time;
+        this.date = date;
         this.enabled = enabled;
     }
 
     static async getAll() {
         let sql = `
-        SELECT device_uuid, instance_name, time, enabled
+        SELECT id, device_uuid, instance_name, source_instance_name, time, date, enabled
         FROM assignment
         `;
         let results = await db.query(sql);
@@ -30,37 +33,48 @@ class Assignment {
             for (let i = 0; i < results.length; i++) {
                 let result = results[i];
                 assignments.push(new Assignment(
+                    result.id,
                     result.instance_name,
+                    result.source_instance_name,
                     result.device_uuid,
                     result.time,
-                    result.enabled)
-                );
+                    result.date,
+                    result.enabled
+                ));
             }
         }
         return assignments;
     }
 
-    static async getByUUID(instanceName, deviceUUID, time) {
+    static async getById(id) {
         let sql = `
-        SELECT device_uuid, instance_name, time, enabled
+        SELECT id, device_uuid, instance_name, source_instance_name, time, date, enabled
         FROM assignment
-        WHERE instance_name = ? AND device_uuid = ? AND time = ?
+        WHERE id = ?
         `;
-        let args = [instanceName, deviceUUID, time];
+        let args = [id];
         let results = await db.query(sql, args);
         if (results && results.length > 0) {
             let result = results[0];
-            return new Assignment(result.instance_name, result.device_uuid, result.time, result.enabled);
+            return new Assignment(
+                result.id,
+                result.instance_name,
+                result.source_instance_name,
+                result.device_uuid,
+                result.time,
+                result.date,
+                result.enabled
+            );
         }
         return null;
     }
 
-    static async deleteById(deviceUUID, instanceName, time) {
+    static async deleteById(id) {
         let sql = `
         DELETE FROM assignment
-        WHERE device_uuid = ? AND instance_name = ? AND time = ?
+        WHERE id = ?
         `;
-        let args = [deviceUUID, instanceName, time];
+        let args = [id];
         try {
             let results = await db.query(sql, args);
             //console.log('[Assignment] DeleteById:', results);
@@ -83,11 +97,13 @@ class Assignment {
 
     async save() {
         let sql = `
-        INSERT INTO assignment (device_uuid, instance_name, time, enabled) VALUES (?, ?, ?, ?)
+        INSERT INTO assignment (id, device_uuid, instance_name, source_instance_name, time, date, enabled) VALUES (?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
             device_uuid=VALUES(device_uuid),
             instance_name=VALUES(instance_name),
+            source_instance_name=VALUES(source_instance_name),
             time=VALUES(time),
+            date=VALUES(date),
             enabled=VALUES(enabled)
         `;
         let args = [this.deviceUUID, this.instanceName, this.time, this.enabled];

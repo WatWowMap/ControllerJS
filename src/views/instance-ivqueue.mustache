@@ -1,19 +1,13 @@
 {{> navbar}}
 
-<style>
-    table.dataTable tbody td {
-        vertical-align: middle;
-    }
-</style>
-
 <script>
     $(document).ready(function() {
         const table = $('#table').DataTable( {
             "ajax": {
-            "url": "/api/ivqueue?instance={{instance_name_url}}",
+                "url": "/api/ivqueue/{{instance_name}}",
                 "dataSrc": "data.ivqueue"
             },
-            "paging":  false,
+            "paging": false,
             "columns": [
                 { "data": "id" },
                 { "data": "pokemon_image" },
@@ -22,7 +16,7 @@
                 { "data": "pokemon_spawn_id" },
                 { "data": "location" }
             ],
-            "info":     true,
+            "info": true,
             "order": [[ 0, "asc" ]],
             "search.caseInsensitive": true,
             "columnDefs": [ {
@@ -34,7 +28,7 @@
         setInterval( function () {
             table.ajax.reload(null, false);
         }, 5000)
-    } );
+    });
 </script>
 
 <body class="{{body_class}}">
@@ -44,14 +38,14 @@
     <div style="width:90%; margin-left:calc(5%);">
         <table id="table" class="table {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width:100%">
             <thead>
-            <tr>
-                <th>#</th>
-                <th>Image</th>
-                <th>Pokemon Name</th>
-                <th>Pokemon ID</th>
-                <th>Spawn ID</th>
-                <th>Location</th>
-            </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Image</th>
+                    <th>Pokemon Name</th>
+                    <th>Pokemon ID</th>
+                    <th>Spawn ID</th>
+                    <th>Location</th>
+                </tr>
             </thead>
             <tbody>
             </tbody>

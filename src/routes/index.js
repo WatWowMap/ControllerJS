@@ -150,16 +150,16 @@ class RouteController {
     async handleAccount(req, res, device, minLevel, maxLevel) {
         let account = await Account.getNewAccount(minLevel, maxLevel);
         console.log(`[Controller] [${device.uuid}] GetNewAccount: ${account ? JSON.stringify(account) : null}`);
-        if (!device || !account) {
+        if (device && !account) {
             if (device.accountUsername) {
-                account = await Account.getWithUsername(device.accountUsername);
-                console.log(`[Controller] [${device.uuid}] GetOldAccount: ${account}`);
-                if (account instanceof Account && 
-                    account.level >= minLevel &&
-                    account.level <= maxLevel &&
-                    !account.firstWarningTimestamp && 
-                    !account.failed && 
-                    !account.failedTimestamp) {
+                let oldAccount = await Account.getWithUsername(device.accountUsername);
+                console.log(`[Controller] [${device.uuid}] GetOldAccount: ${oldAccount ? JSON.stringify(oldAccount) : null}`);
+                if (oldAccount instanceof Account && 
+                    oldAccount.level >= minLevel &&
+                    oldAccount.level <= maxLevel &&
+                    !oldAccount.firstWarningTimestamp && 
+                    !oldAccount.failed && 
+                    !oldAccount.failedTimestamp) {
                     sendResponse(res, 'ok', {
                         username: oldAccount.username.trim(),
                         password: oldAccount.password.trim(),

@@ -13,7 +13,6 @@ const apiRoutes = require('./routes/api.js');
 const uiRoutes = require('./routes/ui.js');
 const routes = new RouteController();
 
-// TODO: Add instance status
 // TODO: Fix iv jobs sent twice sometimes
 // TODO: Polygon checks
 // TODO: Reload instances on change
@@ -34,6 +33,7 @@ app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 // Initialize localzation handler
 i18n.configure({
     locales:['en', 'es', 'de'],
+    // TODO: Why does it look for .js translation files??!?!!
     extension: '.json',
     directory: path.resolve(__dirname, '../static/locales')
 });

@@ -8,5 +8,6 @@ data.locale = config.locale;
 data.locale_new = config.locale;
 data.body_class = config.style === 'dark' ? 'theme-dark' : '';
 data.table_class = config.style === 'dark' ? 'table-dark' : '';
+data.current_version = require('../../package.json').version;
 
 module.exports = data;

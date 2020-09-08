@@ -83,6 +83,20 @@ class IVInstanceController {
         };
     }
 
+    getStatus() {
+        let ivh = null;
+        if (this.startDate) {
+            ivh = this.count / new Date() - this.startDate * 3600;
+        }
+        let ivhString;
+        if (!ivh) {
+            ivhString = '-';
+        } else {
+            ivhString = ivh;
+        }
+        return `<a href="/instance/ivqueue/${encodeURIComponent(this.name)}">Queue</a>: ${this.pokemonQueue.length}, IV/h: ${ivhString}`;
+    }
+
     reload() {
     }
 

@@ -2,7 +2,7 @@
 
 <body class="{{body_class}}">
 
-<h1 class="mt-3" align="center">Manage {{title}}!</h1>
+<h1 class="mt-3" align="center">{{title}} v{{current_version}}</h1>
 
 <div class="w-75" style="float: none; margin: 0 auto;">
 
@@ -22,23 +22,23 @@
             <h4>Scanning</h4>
         </div>
         <div class="list-group list-group-flush">
-            <a href="/accounts" class="list-group-item list-group-item-action">Accounts</a>
-            <a href="/assignments" class="list-group-item list-group-item-action">Auto-Assignments</a>
             <a href="/devices" class="list-group-item list-group-item-action">Devices</a>
             <a href="/instances" class="list-group-item list-group-item-action">Instances</a>
+            <a href="/assignments" class="list-group-item list-group-item-action">Auto-Assignments</a>
+            <a href="/accounts" class="list-group-item list-group-item-action">Accounts</a>
         </div>
     </div>
 
     <div class="card border-dark mt-4 mb-5">
         <div class="card-header text-white bg-dark">
-            <h4>Misc</h4>
+            <h4>Miscellanous</h4>
         </div>
         <div class="list-group list-group-flush">
             <a href="/clearquests" class="list-group-item list-group-item-action list-group-item-danger">Clear All Quests</a>
         </div>
     </div>
 
-    <span class="text-center"><b>Start Time:</b> {{started}}</span>
+    <span class="text-center"><b>Start Time:</b> <span id="started-value">{{started}}</span></span>
 
 </div>
 </body>

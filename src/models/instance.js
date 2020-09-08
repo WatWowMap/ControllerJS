@@ -1,6 +1,7 @@
 'use strict';
 
 const config = require('../config.json');
+const InstanceType = require('../data/instance-type.js');
 const MySQLConnector = require('../services/mysql.js');
 const db = new MySQLConnector(config.db);
 
@@ -109,6 +110,26 @@ class Instance {
         } catch (err) {
             console.error('[Instance] Error:', err);
         }
+    }
+
+    static fromString(type) {
+        switch (type) {
+            case 'circle_pokemon':
+            case 'circlepokemon':
+                return 'Circle Pokemon';
+            case 'circle_raid':
+            case 'circleraid':
+                return 'Circle Raid';
+            case 'circle_smart_raid':
+                return 'Smart Circle Raid';
+            case 'auto_quest':
+            case 'autoquest':
+                return 'Auto Quest';
+            case 'pokemon_iv':
+            case 'pokemoniv':
+                return 'Pokemon IV';
+        }
+        return null;
     }
 }
 
