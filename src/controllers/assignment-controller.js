@@ -73,7 +73,6 @@ class AssignmentController {
             device = await Device.getById(assignment.deviceUUID);
         } catch (err) {
             console.error('[AssignmentController] Error:', err);
-            // TODO: Sleep 1 second
         }
         if (device && device.instanceName !== assignment.instanceName) {
             console.log(`[AssignmentController] Assigning device ${device.uuid} to ${assignment.instanceName}`);
@@ -83,7 +82,6 @@ class AssignmentController {
                 await device.save(device.uuid);
             } catch (err) {
                 console.error('[AssignmentController] Failed to update device', device.uuid, 'assignment with instance name:', assignment.instanceName);
-                // TODO: Sleep 1 second
             }
             InstanceController.instance.addDevice(device);
         }

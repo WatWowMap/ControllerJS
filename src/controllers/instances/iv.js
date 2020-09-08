@@ -17,16 +17,15 @@ class IVInstanceController {
         this.scannedPokemon = [];
         this.startDate = null;
 
-        setInterval(() => this.loop(), 1000);
+        this.timer = setInterval(() => this.loop(), 1000);
     }
 
     async loop() {
         if (this.shouldExit) {
-            // TODO: Stop loop?
+            this.stop();
             return;
         }
         if (this.scannedPokemon.length === 0) {
-            // TODO: Sleep 5 seconds
             if (this.shouldExit) {
                 return;
             }
@@ -46,7 +45,6 @@ class IVInstanceController {
                     pokemonReal = await Pokemon.getById(first.pokemon.id);
                 } catch (err) {
                     console.error('[IVController] Error:', err);
-                    // TODO: Sleep 1 second
                     if (this.shouldExit) {
                         return;
                     }
@@ -102,7 +100,7 @@ class IVInstanceController {
 
     stop() {
         this.shouldExit = true;
-        // TODO: Kill interval timer
+        clearInterval(this.timer);
     }
 
     getQueue() {
@@ -120,7 +118,6 @@ class IVInstanceController {
             // Queue already contains pokemon
             return;
         }
-        // TODO: Area check
 
         let index = this.lastIndexOf(pokemon.pokemonId);
         if (this.pokemonQueue.length >= this.ivQueueLimit && !index) {

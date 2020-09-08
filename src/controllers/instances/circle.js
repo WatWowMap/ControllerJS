@@ -143,7 +143,6 @@ class CircleInstanceController {
     }
 
     stop() {
-        // TODO: Stop instance
     }
 }
 

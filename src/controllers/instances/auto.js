@@ -3,6 +3,7 @@
 const S2 = require('nodes2ts');
 const turf = require('@turf/turf');
 
+const AssignmentController = require('../assignment-controller.js');
 const Account = require('../../models/account.js');
 const Cell = require('../../models/cell.js');
 const Pokestop = require('../../models/pokestop.js');
@@ -115,7 +116,6 @@ class AutoInstanceController {
             try {
                 cells = await Cell.getByIDs(cellIDs);
             } catch (err) {
-                // TODO: Sleep 1 second
                 console.log('[AutoInstanceController] Error:', err);
             }
             let existingCellIDs = cells.map(x => x.id);
@@ -215,9 +215,9 @@ class AutoInstanceController {
                         }
                         if (this.bootstrapCellIDs.length === 0) {
                             // TODO: await this.bootstrap(); // <--- Causes bootstrap loop for some reason
-                            if (this.bootstrapCellIDs.length === 0) {
+                            //if (this.bootstrapCellIDs.length === 0) {
                                 await this.update();
-                            }
+                            //}
                         }
                         return {
                             'area': this.name,
@@ -248,7 +248,7 @@ class AutoInstanceController {
                                 newStops = await Pokestop.getByIds(ids);
                                 done = true;
                             } catch (err) {
-                                // TODO: Sleep 1 secon
+                                console.error('[AutoInstanceController] Failed to get list of Pokestops with ids:', err);
                             }
                         }
 
@@ -260,7 +260,7 @@ class AutoInstanceController {
                             }
                         }
                         if (this.todayStops.length === 0) {
-                            // TODO: Call done method for instanceController this.name
+                            AssignmentController.instance.instanceControllerDone(this.name);
                             return null;
                         }
                     }
@@ -376,19 +376,16 @@ class AutoInstanceController {
                     } else {
                         delay = delayT + 1;
                     }
-                    console.log(`[AutoinstanceController] [${uuid}] Delaying by ${delay}s`);
+                    console.log(`[AutoInstanceController] [${uuid}] Delaying by ${delay}s`);
 
                     if (this.todayStops.length === 0) {
                         let ids = this.allStops.map(x => x.id);
                         let newStops = [];
-                        let done = false;
-                        while (!done) {
-                            try {
-                                newStops = await Pokestop.getByIds(ids);
-                                done = true;
-                            } catch (err) {
-                                // TODO: Sleep 1 second
-                            }
+                        try {
+                            newStops = await Pokestop.getByIds(ids);
+                            done = true;
+                        } catch (err) {
+                            console.error('[AutoInstanceController] Failed to get list of Pokestops by ids:', err);
                         }
 
                         for (let i = 0; i < newStops.length; i++) {
@@ -399,7 +396,7 @@ class AutoInstanceController {
                         }
                         if (this.todayStops.length === 0) {
                             console.log(`[AutoInstanceController] [${this.name}] Instance done`);
-                            // TODO: instanceController done
+                            AssignmentController.instance.instanceControllerDone(this.name);
                         }
                     }
 
@@ -459,7 +456,7 @@ class AutoInstanceController {
 
     stop() {
         this.shouldExit = true;
-        this.clearQuestsTimer = null;
+        clearInterval(this.clearQuestsTimer);
     }
 
     async clearQuests() {

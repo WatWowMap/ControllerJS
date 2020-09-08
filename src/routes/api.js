@@ -4,11 +4,12 @@ const express = require('express');
 const i18n = require('i18n');
 const router = express.Router();
 
+const InstanceController = require('../controllers/instance-controller.js');
 const defaultData = require('../data/default.js');
 const Assignment = require('../models/assignment.js');
 const Device = require('../models/device.js');
 const Instance = require('../models/instance.js');
-const InstanceController = require('../controllers/instance-controller.js');
+const utils = require('../services/utils.js');
 
 router.post('/accounts', async (req, res) => {
 });
@@ -22,7 +23,7 @@ router.post('/assignments', async (req, res) => {
             x.instance_name = x.instanceName;
             x.device_uuid = x.deviceUUID;
             x.time = {
-                formatted: x.time === 0 ? 'On Complete' : zeroPad(parseInt(x.time / 3600), 2) + ':' + zeroPad(parseInt((x.time % 3600) / 60), 2) + ':' + zeroPad(parseInt((x.time % 3600) % 60), 2),
+                formatted: x.time === 0 ? 'On Complete' : utils.zeroPad(parseInt(x.time / 3600), 2) + ':' + utils.zeroPad(parseInt((x.time % 3600) / 60), 2) + ':' + utils.zeroPad(parseInt((x.time % 3600) % 60), 2),
                 timestamp: x.time
             };
             x.date = {
@@ -100,7 +101,5 @@ router.get('/ivqueue/:name', async (req, res) => {
     data.ivqueue = ivqueue;
     res.json({ data: data });
 });
-
-const zeroPad = (num, places) => String(num).padStart(places, '0');
 
 module.exports = router;

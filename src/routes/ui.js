@@ -12,6 +12,7 @@ const Assignment = require('../models/assignment.js');
 const Device = require('../models/device.js');
 const Instance = require('../models/instance.js');
 const Pokestop = require('../models/pokestop.js');
+const utils = require('../services/utils.js');
 
 // Main dashboard route
 router.get(['/', '/index'], (req, res) => {
@@ -20,7 +21,6 @@ router.get(['/', '/index'], (req, res) => {
 
 // Account routes
 router.get('/accounts', async (req, res) => {
-    // TODO: Provide account info
     const data = defaultData;
     data.stats = await Account.getStats();
     data.stat_counts = await Account.getStatCounts();
@@ -157,7 +157,7 @@ router.use('/assignment/edit/:id', async (req, res) => {
         if (assignment.time === 0) {
             formattedTime = '';
         } else {
-            formattedTime = assignment.time;//'\(String(format: '%02d', times.hours)):\(String(format: '%02d', times.minutes)):\(String(format: '%02d', times.seconds))'
+            formattedTime = utils.zeroPad(parseInt(assignment.time / 3600), 2) + ':' + utils.zeroPad(parseInt((assignment.time % 3600) / 60), 2) + ':' + utils.zeroPad(parseInt((assignment.time % 3600) % 60), 2)
         }
         data['time'] = formattedTime;
         data['date'] = assignment.date;
