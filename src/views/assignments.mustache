@@ -54,7 +54,12 @@
             "search.caseInsensitive": true,
             "responsive": true
         });
-    } );
+        $('#table').on('draw.dt', function () {
+            setTimeout(function () {
+                table.ajax.reload(null, false);
+            }, 15 * 1000);
+        });
+    });
 </script>
 
 <body class="{{body_class}}">

@@ -46,12 +46,12 @@
             }],
             "responsive": true
         });
-        $('#table').on( 'draw.dt', function () {
-            setTimeout( function () {
+        $('#table').on('draw.dt', function () {
+            setTimeout(function () {
                 table.ajax.reload(null, false);
-            }, 5000);
-        } );
-    } );
+            }, 15 * 1000);
+        });
+    });
 </script>
 
 <body class="{{body_class}}">
