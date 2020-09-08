@@ -11,9 +11,6 @@ const Device = require('../models/device.js');
 const Instance = require('../models/instance.js');
 const utils = require('../services/utils.js');
 
-router.post('/accounts', async (req, res) => {
-});
-
 router.post('/assignments', async (req, res) => {
     const data = {};
     let assignments = await Assignment.getAll();
