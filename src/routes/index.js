@@ -101,11 +101,8 @@ class RouteController {
     }
 
     async handleHeartbeat(req, res, uuid) {
-        let client = req.socket;
-        let host = client 
-            ? `${client.remoteAddress}:${client.remotePort}` 
-            : '?';
         try {
+            const host = ((req.headers['x-forwarded-for'] || '').split(', ')[0]) || (req.connection.remoteAddress || req.connection.localAddress).match('[0-9]+.[0-9].+[0-9]+.[0-9]+$')[0];
             await Device.touch(uuid, host, false);
             sendResponse(res, 'ok', null);
         } catch (err) {
@@ -115,28 +112,18 @@ class RouteController {
 
     async handleJob(req, res, uuid, device, minLevel, maxLevel) {
         if (device && device.accountUsername) {
-            //let account = await Account.getWithUsername(device.accountUsername, true);
-            //if (account instanceof Account) {
-                let instanceController = InstanceController.instance.getInstanceController(uuid);
-                if (!instanceController) {
-                    console.error(`[Controller] [${uuid}] Failed to get instance controller`);
-                    return;
-                }
-                let task = await instanceController.getTask(uuid, device.accountUsername, false);
-                if (task) {
-                    console.log(`[Controller] [${uuid}] Sending ${task.action} job to ${task.lat}, ${task.lon}`);
-                    sendResponse(res, 'ok', task);
-                } else {
-                    console.warn(`[Controller] [${uuid}] No tasks available yet`);
-                }
-            //} else {
-            //    console.log(`[Controller] [${uuid}] Switching accounts...`);
-            //    sendResponse(res, 'ok', {
-            //        'action': 'switch_account',
-            //        'min_level': minLevel,
-            //        'max_level': maxLevel
-            //    });
-            //}
+            let instanceController = InstanceController.instance.getInstanceController(uuid);
+            if (!instanceController) {
+                console.error(`[Controller] [${uuid}] Failed to get instance controller`);
+                return;
+            }
+            let task = await instanceController.getTask(uuid, device.accountUsername, false);
+            if (task) {
+                console.log(`[Controller] [${uuid}] Sending ${task.action} job to ${task.lat}, ${task.lon}`);
+                sendResponse(res, 'ok', task);
+            } else {
+                console.warn(`[Controller] [${uuid}] No tasks available yet`);
+            }
         } else {
             console.log(`[Controller] [${uuid}] Device not assigned any account, switching accounts...`);
             sendResponse(res, 'ok', {
