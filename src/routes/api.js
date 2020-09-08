@@ -97,8 +97,8 @@ router.get('/ivqueue/:name', async (req, res) => {
             location: `${pokemon.lat},${pokemon.lon}`
         });
     }
-    data.data = { ivqueue };
-    res.render('instance-ivqueue', data);
+    data.ivqueue = ivqueue;
+    res.json({ data: data });
 });
 
 const zeroPad = (num, places) => String(num).padStart(places, '0');
