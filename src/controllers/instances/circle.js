@@ -129,11 +129,9 @@ class CircleInstanceController {
     }
 
     getStatus() {
-        let lastLast = this.lastLastCompletedTime;
-        let last = this.lastCompletedTime;
-        let time = new Date(lastLast);
-        if (lastLast && last && time) {
-            return `Round Time: ${time.getSeconds() + (time.getMinutes() * 60) + (time.getHours() * 3600)}s`;
+        if (this.lastLastCompletedTime && this.lastCompletedTime) {
+            let timeDiffMs = this.lastCompletedTime.getTime() - this.lastLastCompletedTime.getTime();
+            return `Round Time: ${Math.floor(timeDiffMs / 1000)}s`;
         }
         return '-';
     }
