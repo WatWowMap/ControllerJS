@@ -119,7 +119,7 @@ class IVInstanceController {
             return;
         }
         // Check if Pokemon is within any of the instances area geofences
-        if (!this.inMultiPolygon(pokemon.lat, pokemon.lon)) {
+        if (!GeofenceService.inMultiPolygon(pokemon.lat, pokemon.lon)) {
             return;
         }
 
@@ -139,7 +139,7 @@ class IVInstanceController {
     }
 
     gotIV(pokemon) {
-        if (!GeofenceService.instance.inMultiPolygon(this.polygon, pokemon.lat, pokemon.lon)) {
+        if (!GeofenceService.inMultiPolygon(this.polygon, pokemon.lat, pokemon.lon)) {
             return;
         }
         let index = this.pokemonQueue.indexOf(pokemon);
