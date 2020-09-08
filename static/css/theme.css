@@ -16,6 +16,10 @@ table.dataTable tbody td {
     color: white;
 }
 
+.theme-dark .list-group-item {
+    border-color: white;
+}
+
 /*
 .theme-dark .modal-body,
 .theme-dark .modal-content,

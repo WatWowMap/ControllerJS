@@ -41,3 +41,10 @@
 </nav>
 <br>
 <br>
+<script>
+    $(document).ready(function() {
+          // Get current URL path and assign 'active' class
+        const pathname = window.location.pathname;
+        $('#navbar > ul > li > a[href="'+pathname+'"]').parent().addClass('active');
+    });
+</script>

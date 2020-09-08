@@ -353,6 +353,17 @@ class Account {
         return null;
     }
 
+    static async getTotalCount() {
+        let sql = `
+        SELECT COUNT(username) AS count FROM account
+        `;
+        let results = await db.query(sql);
+        if (results && results.length > 0) {
+            return results[0].count;
+        }
+        return 0;
+    }
+
     /**
      * Save account.
      */

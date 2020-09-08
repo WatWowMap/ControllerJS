@@ -15,8 +15,13 @@ const Pokestop = require('../models/pokestop.js');
 const utils = require('../services/utils.js');
 
 // Main dashboard route
-router.get(['/', '/index'], (req, res) => {
-    res.render('index', defaultData);
+router.get(['/', '/index'], async (req, res) => {
+    const data = defaultData;
+    data.devices_count = (await Device.getAll()).length;
+    data.instances_count = (await Instance.getAll()).length;
+    data.assignments_count = (await Assignment.getAll()).length;
+    data.accounts_count = await Account.getTotalCount();
+    res.render('index', data);
 });
 
 // Account routes
@@ -32,7 +37,9 @@ router.use('/accounts/add', (req, res) => {
     if (req.method === 'POST') {
         addAccounts(req, res);
     } else {
-        res.render('accounts-add', defaultData);
+        const data = defaultData;
+        data.level = 0;
+        res.render('accounts-add', data);
     }
 });
 
