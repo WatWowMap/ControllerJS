@@ -10,12 +10,12 @@ const db = new MySQLConnector(config.db);
 class Assignment {
 
     /**
-     * Initalize new Assignment object.
+     * Initialize new Assignment object.
      */
     constructor(id, instanceName, sourceInstanceName, deviceUUID, time = 0, date = null, enabled = true) {
         this.id = id;
         this.instanceName = instanceName;
-        this.sourceInstanceName = sourceInstanceName;
+        this.sourceInstanceName = sourceInstanceName || null;
         this.deviceUUID = deviceUUID;
         this.time = time;
         this.date = date;
