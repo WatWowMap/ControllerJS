@@ -14,7 +14,7 @@ router.post('/accounts', async (req, res) => {
 });
 
 router.post('/assignments', async (req, res) => {
-    const data = defaultData;
+    const data = {};
     let assignments = await Assignment.getAll();
     if (assignments.length > 0) {
         assignments.forEach(x => {
@@ -46,7 +46,7 @@ router.post('/assignments', async (req, res) => {
 });
 
 router.post('/devices', async (req, res) => {
-    const data = defaultData;
+    const data = {};
     let devices = await Device.getAll();
     if (devices.length > 0) {
         for (let i = 0; i < devices.length; i++) {
@@ -66,7 +66,7 @@ router.post('/devices', async (req, res) => {
 });
 
 router.post('/instances', async (req, res) => {
-    const data = defaultData;
+    const data = {};
     let instances = await Instance.getAll();
     if (instances.length > 0) {
         for (let i = 0; i < instances.length; i++) {
