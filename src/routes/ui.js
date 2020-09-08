@@ -104,7 +104,7 @@ router.get('/assignment/start/:id', async (req, res) => {
         console.error('Failed to get assignment by id:', id, err);
         return;
     }
-    await InstanceController.instance.triggerAssignment(assignment, true);
+    await AssignmentController.instance.triggerAssignment(assignment, true);
     res.redirect('/assignments');
 });
 
@@ -142,6 +142,7 @@ router.use('/assignment/edit/:id', async (req, res) => {
                 selected_source: instance.name === assignment.sourceInstanceName
             });
         });
+        data['id'] = id;
         data['instances'] = instancesData;
         let devicesData = [];
         devices.forEach(device => {
@@ -709,7 +710,7 @@ const editAssignmentPost = async (req, res) => {
             let minutes = parseInt(split[1]);
             let seconds = parseInt(split[2]);
             let timeIntNew = hours * 3600 + minutes * 60 + seconds;
-            timeIntNew = timeIntNew === 0 ? 1 : timeIntNew;
+            timeInt = timeIntNew === 0 ? 1 : timeIntNew;
         } else {
             data['show_error'] = true;
             data['error'] = 'Invalid Time.';
@@ -728,8 +729,7 @@ const editAssignmentPost = async (req, res) => {
         return data;
     }
 
-    let selectedUUID = req.body.old_name || '';
-    let id = selectedUUID;
+    let id = req.params.id;
     let oldAssignment;
     try {
         oldAssignment = await Assignment.getById(id);

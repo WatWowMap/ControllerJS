@@ -106,10 +106,10 @@ class Assignment {
             date=VALUES(date),
             enabled=VALUES(enabled)
         `;
-        let args = [this.deviceUUID, this.instanceName, this.time, this.enabled];
+        let args = [this.id, this.deviceUUID, this.instanceName, this.sourceInstanceName, this.time || 0, this.date, this.enabled];
         try {
             let results = await db.query(sql, args);
-            //console.log('[Instance] Save:', results);
+            //console.log('[Assignment] Save:', results);
         } catch (err) {
             console.error('[Assignment] Error:', err);
         }

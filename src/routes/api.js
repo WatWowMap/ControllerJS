@@ -27,14 +27,14 @@ router.post('/assignments', async (req, res) => {
             };
             x.date = {
                 formatted: (x.date || '').toLocaleString(),
-                timestamp: x.date ? x.date.getTime() : 0
+                timestamp: x.date ? new Date(x.date).getTime() : 0
             };
             x.enabled = x.enabled ? 'Yes' : 'No';
             x.buttons = `
             <div class="btn-group" role="group">
                 <a href="assignment/start/${x.id}" role="button" class="btn btn-success">Start</a>
                 <a href="/assignment/edit/${x.id}" role="button" class="btn btn-primary">Edit</a>
-                <a href="/assignment/delete/${x.id}" role="button" class="btn btn-danger">Delete</a>
+                <a href="/assignment/delete/${x.id}" role="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete auto-assignments with id ${x.id}?')">Delete</a>
             </div>
             `;
         });
