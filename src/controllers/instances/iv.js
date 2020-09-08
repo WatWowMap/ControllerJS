@@ -1,6 +1,7 @@
 'use strict';
 
 const Pokemon = require('../../models/pokemon.js');
+const GeofenceService = require('../../services/geofence.js');
 
 class IVInstanceController {
     
@@ -138,20 +139,21 @@ class IVInstanceController {
     }
 
     gotIV(pokemon) {
-        if (this.polygon.includes({ lat: pokemon.lat, lon: pokemon.lon })) {
-            let index = this.pokemonQueue.indexOf(pokemon);
-            if (index) {
-                this.pokemonQueue.remove(index);
-            }
-            if (!this.startDate) {
-                this.startDate = new Date();
-            }
-            if (this.count === Number.MAX_SAFE_INTEGER) {
-                this.count = 0;
-                this.startDate = new Date();
-            } else {
-                this.count++;
-            }
+        if (!GeofenceService.instance.inMultiPolygon(this.polygon, pokemon.lat, pokemon.lon)) {
+            return;
+        }
+        let index = this.pokemonQueue.indexOf(pokemon);
+        if (index) {
+            this.pokemonQueue.remove(index);
+        }
+        if (!this.startDate) {
+            this.startDate = new Date();
+        }
+        if (this.count === Number.MAX_SAFE_INTEGER) {
+            this.count = 0;
+            this.startDate = new Date();
+        } else {
+            this.count++;
         }
     }
 
@@ -165,28 +167,6 @@ class IVInstanceController {
             }
         }
         return null;
-    }
-
-    inMultiPolygon(lat, lon) {
-        let multiPolygon = turf.multiPolygon(this.polygon);
-        for (let i = 0; i < multiPolygon.geometry.coordinates.length; i++) {
-            try {
-                let coords = multiPolygon.geometry.coordinates[i];
-                // Make sure first and last coords are the same
-                if (coords[0][0] !== coords[0][coords[0].length - 1]) {
-                    coords[0].push(coords[0][0]);
-                }
-                let polygon = turf.polygon(coords);
-                let position = turf.point([lon, lat]);
-                // Check if pokemon is within geofence
-                if (turf.booleanPointInPolygon(position, polygon)) {
-                    return true;
-                }
-            } catch (err) {
-                console.error('[IVInstanceController] InMultiPolygon:', err);
-            }
-        }
-        return false;
     }
 }
 
