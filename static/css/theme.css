@@ -2,6 +2,10 @@ table.dataTable tbody td {
     vertical-align: middle;
 }
 
+.sorting,
+.sorting_asc,
+.sorting_desc,
+.sorting_disabled,
 .theme-dark .card-body,
 .theme-dark .dropdown-menu,
 .theme-dark .dropdown-item,
