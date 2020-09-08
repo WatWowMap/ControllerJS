@@ -14,7 +14,6 @@ const uiRoutes = require('./routes/ui.js');
 const routes = new RouteController();
 
 // TODO: Fix iv jobs sent twice sometimes
-// TODO: Polygon checks
 // TODO: Reload instances on change
 // TODO: GotIV
 

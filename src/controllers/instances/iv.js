@@ -109,8 +109,7 @@ class IVInstanceController {
     }
 
     addPokemon(pokemon) {
-        // TODO: Geofence check
-        if (!this.pokemonList.includes(pokemon.pokemonId)) {// && this.polygon.includes({ lat: pokemon.lat, lon: pokemon.lon })) {
+        if (!this.pokemonList.includes(pokemon.pokemonId)) {
             // Pokemon id not in pokemon IV list
             return;
         }
@@ -118,10 +117,14 @@ class IVInstanceController {
             // Queue already contains pokemon
             return;
         }
+        // Check if Pokemon is within any of the instances area geofences
+        if (!this.inMultiPolygon(pokemon.lat, pokemon.lon)) {
+            return;
+        }
 
         let index = this.lastIndexOf(pokemon.pokemonId);
         if (this.pokemonQueue.length >= this.ivQueueLimit && !index) {
-            //console.debug('[IVController] Queue is full!');
+            console.debug('[IVController] Queue is full!');
         } else if (this.pokemonQueue.length >= this.ivQueueLimit) {
             // Insert pokemon at top of queue.
             this.pokemonQueue.unshift(pokemon);
@@ -162,6 +165,28 @@ class IVInstanceController {
             }
         }
         return null;
+    }
+
+    inMultiPolygon(lat, lon) {
+        let multiPolygon = turf.multiPolygon(this.polygon);
+        for (let i = 0; i < multiPolygon.geometry.coordinates.length; i++) {
+            try {
+                let coords = multiPolygon.geometry.coordinates[i];
+                // Make sure first and last coords are the same
+                if (coords[0][0] !== coords[0][coords[0].length - 1]) {
+                    coords[0].push(coords[0][0]);
+                }
+                let polygon = turf.polygon(coords);
+                let position = turf.point([lon, lat]);
+                // Check if pokemon is within geofence
+                if (turf.booleanPointInPolygon(position, polygon)) {
+                    return true;
+                }
+            } catch (err) {
+                console.error('[IVInstanceController] InMultiPolygon:', err);
+            }
+        }
+        return false;
     }
 }
 
