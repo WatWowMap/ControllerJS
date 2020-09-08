@@ -39,39 +39,6 @@
     </div>
 
     <span class="text-center"><b>Start Time:</b> <span id="started-value">{{started}}</span></span>
-    <span class="text-center"><b>Uptime:</b> <span id="uptime-value">{{uptime}}</span></span>
 
 </div>
 </body>
-
-<script>
-let started = $('#started-value').val();
-let realStarted = timeSince(new Date(started));
-console.log('value:', started);
-console.log('realValue:', realStarted);
-$('#uptime-value').text(realStarted);
-function timeSince(date) {
-    let seconds = Math.floor((new Date() - date) / 1000);
-    let interval = seconds / 31536000;
-    if (interval > 1) {
-        return Math.floor(interval) + ' years';
-    }
-    interval = seconds / 2592000;
-    if (interval > 1) {
-        return Math.floor(interval) + ' months';
-    }
-    interval = seconds / 86400;
-    if (interval > 1) {
-        return Math.floor(interval) + ' days';
-    }
-    interval = seconds / 3600;
-    if (interval > 1) {
-        return Math.floor(interval) + ' hours';
-    }
-    interval = seconds / 60;
-    if (interval > 1) {
-        return Math.floor(interval) + ' minutes';
-    }
-    return Math.floor(seconds) + ' seconds';
-};
-</script>
