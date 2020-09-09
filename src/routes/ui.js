@@ -13,6 +13,7 @@ const Device = require('../models/device.js');
 const Instance = require('../models/instance.js');
 const Pokestop = require('../models/pokestop.js');
 const utils = require('../services/utils.js');
+const { nearest } = require('@turf/turf');
 
 // Main dashboard route
 router.get(['/', '/index'], async (req, res) => {
@@ -62,8 +63,11 @@ router.use('/assignment/add', async (req, res) => {
             instances = await Instance.getAll();
         } catch (err) {
             console.error('[UI] Failed to get device and instance list:', err);
-            res.send('Internal Server Error');
-            return data;
+            res.render('assignment-add', {
+                error: 'Internal Server Error!',
+                show_error: true
+            });
+            return;
         }
         let instancesData = [];
         if (instances) {
@@ -109,13 +113,17 @@ router.get('/assignment/start/:id', async (req, res) => {
         assignment = await Assignment.getById(id);
     } catch (err) {
         console.error('Failed to get assignment by id:', id, err);
+        res.render('assignment-start', {
+            error: 'Failed to find assignment.',
+            show_error: true
+        });
         return;
     }
     await AssignmentController.instance.triggerAssignment(assignment, true);
     res.redirect('/assignments');
 });
 
-router.use('/assignment/edit/:id', async (req, res) => {
+router.use('/assignment/edit/:id', async (req, res, next) => {
     if (req.method === 'POST') {
         // Save assignment
         await editAssignmentPost(req, res);
@@ -127,6 +135,12 @@ router.use('/assignment/edit/:id', async (req, res) => {
             assignment = await Assignment.getById(id);
         } catch (err) {
             console.error('Failed to get assignment with id:', id);
+        }
+        if (!assignment) {
+            res.render('assignment-edit', {
+                error: 'Assignment does not exist!',
+                show_error: true
+            });
             return;
         }
 
@@ -137,8 +151,11 @@ router.use('/assignment/edit/:id', async (req, res) => {
             devices = await Device.getAll();
             instances = await Instance.getAll();
         } catch {
-            res.send('Internal Server Error');
-            return data;
+            res.render('assignment-edit', {
+                error: 'Internal Server Error.',
+                show_error: true
+            });
+            return;
         }
 
         let instancesData = [];
@@ -170,9 +187,11 @@ router.use('/assignment/edit/:id', async (req, res) => {
         data['date'] = assignment.date;
         data['enabled'] = assignment.enabled ? 'checked' : '';
         if (!assignment.deviceUUID || !assignment.instanceName) {
-            data['show_error'] = true;
-            data['error'] = 'Invalid Request.';
-            return data;
+            res.render('assignment-edit', {
+                error: 'Invalid Request.',
+                show_error: true
+            });
+            return;
         }
         res.render('assignment-edit', data);
     }
@@ -373,14 +392,20 @@ const addAccounts = (req, res) => {
         }
     }
     if (accs.length === 0) {
-        data['show_error'] = true;
-        data['error'] = 'Failed to parse accounts.';
+        res.render('accounts-add', {
+            error: 'Failed to parse accounts.',
+            show_error: true
+        });
+        return;
     } else {
         try {
             accs.forEach(async acc => await acc.save(false));
         } catch (err) {
-            data['show_error'] = true;
-            data['error'] = 'Failed to save accounts.';
+            res.render('accounts-add', {
+                error: 'Failed to save accounts.',
+                show_error: true
+            });
+            return;
         }
     }
     res.redirect('/accounts');
@@ -446,9 +471,11 @@ const addInstancePost = async (req, res) => {
     }
 
     if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40) {
-        data['show_error'] = true;
-        data['error'] = 'Invalid Levels';
-        return data;
+        res.render('instance-add', {
+            error: 'Invalid Levels',
+            show_error: true
+        });
+        return;
     }
 
     let newCoords;
@@ -467,9 +494,11 @@ const addInstancePost = async (req, res) => {
         });
 
         if (coords.length === 0) {
-            data['show_error'] = true;
-            data['error'] = 'Failed to parse coords.';
-            return data;
+            res.render('instance-add', {
+                error: 'Failed to parse coords.',
+                show_error: true
+            });
+            return;
         }
         newCoords = coords
     } else if (type && type === InstanceType.AutoQuest || type === InstanceType.PokemonIV) {
@@ -496,16 +525,20 @@ const addInstancePost = async (req, res) => {
         });
 
         if (coordArray.length === 0) {
-            data['show_error'] = true;
-            data['error'] = 'Failed to parse coords.';
-            return data;
+            res.render('instance-add', {
+                error: 'Failed to parse coords.',
+                show_error: true
+            });
+            return;
         }
 
         newCoords = coordArray;
     } else {
-        data['show_error'] = true;
-        data['error'] = 'Invalid Request.';
-        return data;
+        res.render('instance-add', {
+            error: 'Invalid Request.',
+            show_error: true
+        });
+        return;
     }
 
     if (instanceName) {
@@ -518,8 +551,11 @@ const addInstancePost = async (req, res) => {
             res.redirect('/instances');
         }
         if (!oldInstance) {
-            res.send('Instance Not Found');
-            return data;
+            res.render('instance-add', {
+                error: 'Instance Not Found.',
+                show_error: true
+            });
+            return;
         } else {
             let oldInstanceData = {};
             oldInstance.name = name;
@@ -576,15 +612,17 @@ const addAssignmentPost = async (req, res) => {
     let onComplete = req.body.oncomplete;
     let enabled = req.body.enabled;
 
-    let data = defaultData;
     let instances = [];
     let devices = [];
     try {
         devices = await Device.getAll();
         instances = await Instance.getAll();
     } catch {
-        res.send('Internal Server Error');
-        return data;
+        res.render('assignment-add', {
+            error: 'Internal Server Error.',
+            show_error: true
+        });
+        return;
     }
 
     let timeInt;
@@ -603,9 +641,11 @@ const addAssignmentPost = async (req, res) => {
                 timeInt = timeIntNew;
             }
         } else {
-            data['show_error'] = true;
-            data['error'] = 'Invalid Time.';
-            return data;
+            res.render('assignment-add', {
+                error: 'Invalid Time.',
+                show_error: true
+            });
+            return;
         }
     }
 
@@ -615,9 +655,11 @@ const addAssignmentPost = async (req, res) => {
     }
 
     if (!selectedDevice || !selectedInstance) {
-        data['show_error'] = true;
-        data['error'] = 'Invalid Request.';
-        return data;
+        res.render('assignment-add', {
+            error: 'Invalid Request.',
+            show_error: true
+        });
+        return;
     }
     try {
         let assignment = new Assignment(
@@ -632,9 +674,11 @@ const addAssignmentPost = async (req, res) => {
         assignment.save();
         AssignmentController.instance.addAssignment(assignment);
     } catch {
-        data['show_error'] = true;
-        data['error'] = 'Failed to assign Device.';
-        return data;
+        res.render('assignment-add', {
+            error: 'Failed to assign Device.',
+            show_error: true
+        });
+        return;
     }
 
     if (onComplete === 'on') {
@@ -677,9 +721,11 @@ const editAssignmentPost = async (req, res) => {
             let timeIntNew = hours * 3600 + minutes * 60 + seconds;
             timeInt = timeIntNew === 0 ? 1 : timeIntNew;
         } else {
-            data['show_error'] = true;
-            data['error'] = 'Invalid Time.';
-            return data;
+            res.render('assignment-edit', {
+                error: 'Invalid Time.',
+                show_error: true
+            });
+            return;
         }
     }
 
@@ -689,9 +735,11 @@ const editAssignmentPost = async (req, res) => {
     }
 
     if (!selectedDevice || !selectedInstance) {
-        data['show_error'] = true;
-        data['error'] = 'Invalid Request.';
-        return data;
+        res.render('assignment-edit', {
+            error: 'Invalid Request.',
+            show_error: true
+        });
+        return;
     }
 
     let id = req.params.id;
@@ -700,8 +748,11 @@ const editAssignmentPost = async (req, res) => {
         oldAssignment = await Assignment.getById(id);
     } catch (err) {
         console.error(`[UI] Failed to retrieve existing assignment with id ${oldInstanceName}-${oldDeviceUUID}-${oldTime}:`, err);
-        res.send('Internal Server Error');
-        return data;
+        res.render('assignment-edit', {
+            error: 'Internal Server Error.',
+            show_error: true
+        });
+        return;
     }
 
     try {
@@ -719,9 +770,11 @@ const editAssignmentPost = async (req, res) => {
         AssignmentController.instance.editAssignment(oldAssignment, newAssignment);
     } catch (err) {
         console.error('[UI] Failed to save assignment:', err);
-        data['show_error'] = true;
-        data['error'] = 'Failed to assign Device.';
-        return data;
+        res.render('assignment-edit', {
+            error: 'Failed to save assignment.',
+            show_error: true
+        });
+        return;
     }
     res.redirect('/assignments');
 };
