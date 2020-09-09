@@ -28,9 +28,11 @@
             ],
             "colReorder": true,
             "stateSave": true,
-            "paging":   true,
-            "lengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+            "paging": true,
+            "lengthMenu": [[50, 100, 200, 300, -1], [50, 100, 200, 300, "All"]],
+            "pageLength": 100,
             "columns": [
+                { "data": populateImage, width: '5%', className: 'details-control' },
                 { "data": "uuid" },
                 { "data": "accountUsername" },
                 { "data": "instanceName" },
@@ -41,11 +43,11 @@
                 } },
                 { "data": "buttons" }
             ],
-            "info":     true,
+            "info": true,
             "order": [[ 0, "asc" ]],
             "search.caseInsensitive": true,
             "columnDefs": [ {
-                "targets": [5],
+                "targets": [6],
                 "orderable": false
             }],
             "responsive": true
@@ -56,6 +58,18 @@
             }, 15 * 1000);
         });
     });
+
+    function populateImage (row, type, set, meta) {
+        const input = row.image;
+        switch (input.type) {
+            case 'img':
+                return `<img class="lazy_load" src="/img/${input.path}"/>`;
+            case 'device':
+                return `<img class="lazy_load" src="/img/devices/${input.status}.png"/>`;
+            default:
+                return input;
+        }
+    }
 </script>
 
 <body class="{{body_class}}">
@@ -66,6 +80,7 @@
         <table id="table" class="table {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width:100%">
             <thead>
             <tr>
+                <th class="all">Status</th>
                 <th class="all">UUID</th>
                 <th class="min-desktop">Username</th>
                 <th class="all">Instance</th>

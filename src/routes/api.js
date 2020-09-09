@@ -52,6 +52,13 @@ router.post('/devices', async (req, res) => {
             //x.host = x.lastHost;
             //x.username = x.accountUsername;
             //x.instance = x.instanceName ? x.instanceName : '';
+            const delta = 15 * 60;
+            const diff = new Date() / 1000 - delta;
+            const isOnline = device.lastSeen > diff ? 0 : 1;
+            device.image = {
+                type: 'device',
+                status: isOnline
+            };
             device.last_seen = {
                 formatted: new Date(device.lastSeen * 1000).toLocaleString(),
                 sorted: device.lastSeen

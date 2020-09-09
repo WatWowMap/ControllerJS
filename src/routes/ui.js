@@ -415,19 +415,9 @@ const addInstancePost = async (req, res) => {
         }
     }
 
-    let type = req.body.type;//Instance.fromString(req.body.type || '');
+    let type = req.body.type;
     let ivQueueLimit = parseInt(req.body.iv_queue_limit || 100);
     let spinLimit = parseInt(req.body.spin_limit || 500);
-
-    //data['name'] = name;
-    //data['area'] = area;
-    //data['pokemon_ids'] = pokemonIDsText;
-    //data['scatter_pokemon_ids'] = scatterPokemonIDsText;
-    //data['min_level'] = minLevel;
-    //data['max_level'] = maxLevel;
-    //data['timezone_offset'] = timezoneOffset;
-    //data['iv_queue_limit'] = ivQueueLimit;
-    //data['spin_limit'] = spinLimit;
 
     switch (type) {
         case InstanceType.CirclePokemon:
@@ -483,7 +473,6 @@ const addInstancePost = async (req, res) => {
         }
         newCoords = coords
     } else if (type && type === InstanceType.AutoQuest || type === InstanceType.PokemonIV) {
-        //let coordArray: Coord[][] = [];
         let coordArray = [];
         let areaRows = area.split('\n');
         let currentIndex = 0;
@@ -526,9 +515,6 @@ const addInstancePost = async (req, res) => {
             oldInstance = await Instance.getByName(instanceName);
         } catch (err) {
             console.error('[UI] Failed to get existing instance with name:', instanceName);
-            //data['show_error'] = true;
-            //data['error'] = 'Failed to update instance. Is the name unique?';
-            //return data;
             res.redirect('/instances');
         }
         if (!oldInstance) {
@@ -553,9 +539,6 @@ const addInstancePost = async (req, res) => {
                 await oldInstance.save(instanceName);
             } catch (err) {
                 console.error('[UI] Failed to update existing instance:', err);
-                //data['show_error'] = true;
-                //data['error'] = 'Failed to update instance. Is the name unique?';
-                //return data;
             }
             InstanceController.instance.reloadInstance(oldInstance, instanceName);
         }
@@ -579,9 +562,6 @@ const addInstancePost = async (req, res) => {
             InstanceController.instance.addInstance(instance);
         } catch (err) {
             console.error('[UI] Failed to create instance:', err);
-            //data['show_error'] = true;
-            //data['error'] = 'Failed to create instance. Is the name unique?';
-            //return data;
         }
     }
     res.redirect('/instances');
@@ -606,26 +586,6 @@ const addAssignmentPost = async (req, res) => {
         res.send('Internal Server Error');
         return data;
     }
-
-    /*/
-    let instancesData = [];
-    instances.forEach(instance => {
-        instancesData.push({
-            name: instance.name,
-            selected: instance.name === selectedInstance
-        });
-    });
-    data['instances'] = instancesData;
-    let devicesData = [];
-    devices.forEach(device => {
-        devicesData.push({
-            uuid: device.uuid,
-            selected: device.uuid === selectedDevice
-        });
-    });
-    data['devices'] = devicesData;
-    data['time'] = time;
-    */
 
     let timeInt;
     if (!time) {
@@ -692,9 +652,6 @@ const addAssignmentPost = async (req, res) => {
             AssignmentController.instance.addAssignment(onCompleteAssignment);
         } catch (err) {
             console.error('[UI] Failed to create new assignment:', err);
-            data['show_error'] = true;
-            data['error'] = 'Failed to assign Device.';
-            //return data;
         }
     }
     res.redirect('/assignments');
