@@ -151,17 +151,17 @@ class InstanceController {
         }
     }
 
-    removeInstance(instance) {
-        this.removeInstanceByName(instance.name);
+    async removeInstance(instance) {
+        await this.removeInstanceByName(instance.name);
     }
 
-    removeInstanceByName(name) {
+    async removeInstanceByName(name) {
         this.instances[name].stop();
         this.instances[name] = null;
         for (let device in this.devices.filter(x => x.instanceName === name)) {
             this.devices[device.uuid] = null;
         }
-        AssignmentController.instance.setup();
+        await AssignmentController.instance.setup();
     }
 
     addDevice(device) {
