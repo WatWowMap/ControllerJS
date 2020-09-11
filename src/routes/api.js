@@ -49,9 +49,9 @@ router.post('/devices', async (req, res) => {
     if (devices.length > 0) {
         for (let i = 0; i < devices.length; i++) {
             let device = devices[i];
-            //x.host = x.lastHost;
-            //x.username = x.accountUsername;
-            //x.instance = x.instanceName ? x.instanceName : '';
+            device.last_host = device.lastHost;
+            device.account_username = device.accountUsername;
+            device.instance_name = device.instanceName ? device.instanceName : '';
             const delta = 15 * 60;
             const diff = new Date() / 1000 - delta;
             const isOnline = device.lastSeen > diff ? 0 : 1;
@@ -98,6 +98,8 @@ router.get('/ivqueue/:name', async (req, res) => {
             pokemon_image: `<img src="https://raw.githubusercontent.com/Mygod/PkmnHomeIcons/icons/icons/${pokemon.pokemonId}.png" style="height:50px; width:50px;">`,
             pokemon_name: i18n.__('poke_' + pokemon.pokemonId) || '',
             pokemon_id: pokemon.pokemonId,
+            form_id: pokemon.form,
+            costume_id: pokemon.costume,
             pokemon_spawn_id: pokemon.id,
             location: `<a href="https://maps.google.com/maps?q=${pokemon.lat},${pokemon.lon}">${pokemon.lat.toFixed(5)},${pokemon.lon.toFixed(5)}</a>`
         });
