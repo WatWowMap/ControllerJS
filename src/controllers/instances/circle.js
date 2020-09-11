@@ -37,10 +37,10 @@ class CircleInstanceController {
         for (let i = 0; i < keys.length; i++) {
             let ouuid = keys[i];
             let value = this.lastUuidIndex[ouuid];
-            // Skip the querying device
-            //if (ouuid === uuid) {
-            //    continue;
-            //}
+            // Skip until the querying device
+            if (ouuid !== uuid) {
+                continue;
+            }
             let lastSeen = this.lastUuidSeenTime[ouuid];
             if (lastSeen instanceof Date) {
                 let sec = lastSeen.getSeconds();
