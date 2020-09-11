@@ -106,4 +106,5 @@ dist
 # Config Data
 config.json
 
-pogo-protos
+static/locales/*.json
+!static/locales/_*

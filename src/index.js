@@ -13,10 +13,6 @@ const apiRoutes = require('./routes/api.js');
 const uiRoutes = require('./routes/ui.js');
 const routes = new RouteController();
 
-// TODO: Fix iv jobs sent twice sometimes
-// TODO: Reload instances on change
-// TODO: GotIV
-
 // View engine
 app.set('view engine', 'mustache');
 app.set('views', path.resolve(__dirname, 'views'));

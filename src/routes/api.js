@@ -95,11 +95,11 @@ router.get('/ivqueue/:name', async (req, res) => {
         let pokemon = queue[i];
         ivqueue.push({
             id: i + 1,
-            pokemon_image: `<img src="/static/img/pokemon/${pokemon.pokemonId}.png" style="height:50px; width:50px;">`,
+            pokemon_image: `<img src="https://raw.githubusercontent.com/Mygod/PkmnHomeIcons/icons/icons/${pokemon.pokemonId}.png" style="height:50px; width:50px;">`,
             pokemon_name: i18n.__('poke_' + pokemon.pokemonId) || '',
             pokemon_id: pokemon.pokemonId,
             pokemon_spawn_id: pokemon.id,
-            location: `<a href="https://maps.google.com/maps?q=${pokemon.lat},${pokemon.lon}">${pokemon.lat},${pokemon.lon}</a>`
+            location: `<a href="https://maps.google.com/maps?q=${pokemon.lat},${pokemon.lon}">${pokemon.lat.toFixed(5)},${pokemon.lon.toFixed(5)}</a>`
         });
     }
     data.ivqueue = ivqueue;

@@ -12,14 +12,15 @@ Device controller alternative to [RealDeviceMap](https://github.com/RealDeviceMa
 2.) Install dependencies `npm install`  
 3.) Copy config `cp src/config.example.json src/config.json`  
 4.) Fill out config `vi src/config.json` (listening port, instances, db info, etc)  
-5.) Run `npm run start` (Database tables will be created if they don't exist)  
-6.) Point `backend_url` config property in [DeviceConfigManager](https://github.com/versx/DeviceConfigManager) to `http://dataparser_ip:9002`  
-7.) Import your existing `RDM` instances to your ControllerJS/DataParser `instances` table (replace testdb with database name and replace rdmdb with RDM's database name):  
+5.) Run `npm run create-locales` to create locale translation files  
+6.) Run `npm run start` (Database tables will be created if they don't exist)  
+7.) Point `backend_url` config property in [DeviceConfigManager](https://github.com/versx/DeviceConfigManager) to `http://dataparser_ip:9002`  
+8.) Import your existing `RDM` instances to your ControllerJS/DataParser `instances` table (replace testdb with database name and replace rdmdb with RDM's database name):  
 ```
 INSERT INTO testdb.instance (name, type, data)
 SELECT name, type, data FROM rdmdb.instance;
 ```
-8.) Visit `http://controllerip:9002` to add accounts, assign devices, or manage instances and auto-assignments  
+9.) Visit `http://controllerip:9002` to add accounts, assign devices, or manage instances and auto-assignments  
 
 ## Configuration
 ```js
