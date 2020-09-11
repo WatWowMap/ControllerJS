@@ -41,8 +41,8 @@ class CircleInstanceController {
             //if (ouuid === uuid) {
             //    continue;
             //}
-            if (this.lastUuidSeenTime[ouuid]) {
-                let lastSeen = this.lastUuidSeenTime[uuid];
+            let lastSeen = this.lastUuidSeenTime[ouuid];
+            if (lastSeen instanceof Date) {
                 let sec = lastSeen.getSeconds();
                 if (sec > deadDeviceCutoff) {
                     numLiveDevices++;
