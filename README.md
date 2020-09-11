@@ -60,7 +60,7 @@ SELECT name, type, data FROM rdmdb.instance;
 3.) `npm install`  
 
 ## Current Issues  
-- IV instances occasionally get the same coordinates twice in a row  
+- Auto-Assignments might not work correctly
 
 ## Discord  
 https://discordapp.com/invite/zZ9h9Xa  

@@ -198,7 +198,7 @@ class InstanceController {
 
     async removeDeviceByName(name) {
         /*delete*/ this.devices[name] = null;
-        await AssignmentController.instance.setup();
+        // TODO: await AssignmentController.instance.setup();
     }
 
     getDeviceUUIDsInInstance(instanceName) {

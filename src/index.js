@@ -34,6 +34,7 @@ i18n.configure({
     locales:['en', 'es', 'de'],
     // TODO: Why does it look for .js translation files??!?!!
     extension: '.json',
+    syncFiles: true,
     directory: path.resolve(__dirname, '../static/locales')
 });
 app.use(i18n.init);

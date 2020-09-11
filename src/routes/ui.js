@@ -220,6 +220,7 @@ router.use('/device/assign/:uuid', async (req, res) => {
         const instance = req.body.instance;
         device.instanceName = instance;
         await device.save(uuid);
+        await InstanceController.instance.reloadDevice(device, uuid);
         res.redirect('/devices');
     } else {
         const data = defaultData;
