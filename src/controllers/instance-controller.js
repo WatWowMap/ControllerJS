@@ -151,6 +151,23 @@ class InstanceController {
         }
     }
 
+    reloadInstance(newInstance, oldInstanceName) {
+        let oldInstance = this.instances[oldInstanceName];
+        if (oldInstance) {
+            for (let row in this.devices) {
+                let device = this.devices[row];
+                if (device.instanceName === oldInstance.name) {
+                    device.instanceName = newInstance.name
+                    this.devices[row] = device;
+                }
+            }
+            this.instances[oldInstanceName].stop();
+            this.instances[oldInstanceName] = null;
+        }
+        this.addInstance(newInstance);
+    }
+
+
     async removeInstance(instance) {
         await this.removeInstanceByName(instance.name);
     }
