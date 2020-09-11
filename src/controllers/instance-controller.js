@@ -17,7 +17,9 @@ class InstanceController {
         this.devices = {};
         this.instances = {};
 
-        this.init().then(x => x).catch(err => {
+        (async() => {
+            await this.init();
+        })().catch(err => {
             console.error('[InstanceController] Error:', err);
         });
     }
@@ -145,8 +147,8 @@ class InstanceController {
     }
 
     reloadAll() {
-        for (let i = 0; i < this.instances.length; i++) {
-            let instance = this.instances[i];
+        for (let name in this.instances) {
+            let instance = this.instances[name];
             instance.reload();
         }
     }
@@ -154,11 +156,11 @@ class InstanceController {
     reloadInstance(newInstance, oldInstanceName) {
         let oldInstance = this.instances[oldInstanceName];
         if (oldInstance) {
-            for (let row in this.devices) {
-                let device = this.devices[row];
+            for (let uuid in this.devices) {
+                let device = this.devices[uuid];
                 if (device.instanceName === oldInstance.name) {
                     device.instanceName = newInstance.name
-                    this.devices[row] = device;
+                    this.devices[uuid] = device;
                 }
             }
             this.instances[oldInstanceName].stop();
@@ -203,11 +205,10 @@ class InstanceController {
 
     getDeviceUUIDsInInstance(instanceName) {
         let uuids = [];
-        for (let i = 0; i < this.devices.length; i++) {
-            let key = this.devices[i];
-            let device = this.devices[key];
+        for (let uuid in this.devices) {
+            let device = this.devices[uuid];
             if (device.instanceName === instanceName) {
-                uuids.push(key);
+                uuids.push(uuid);
             }
         }
         return uuids;
