@@ -115,7 +115,7 @@ class DeviceController {
             let instanceController = InstanceController.instance.getInstanceController(uuid);
             if (!instanceController) {
                 console.error(`[Controller] [${uuid}] Failed to get instance controller`);
-                return;
+                return res.sendStatus(404);
             }
             let task = await instanceController.getTask(uuid, device.accountUsername, false);
             if (task) {
@@ -123,6 +123,7 @@ class DeviceController {
                 sendResponse(res, 'ok', task);
             } else {
                 console.warn(`[Controller] [${uuid}] No tasks available yet`);
+                return res.sendStatus(404);
             }
         } else {
             console.log(`[Controller] [${uuid}] Device not assigned any account, switching accounts...`);
