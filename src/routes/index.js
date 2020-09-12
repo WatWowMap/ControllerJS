@@ -27,7 +27,7 @@ class DeviceController {
         //let username = payload['username'];
         //let tutorial = parseInt(payload['tutorial'] || 0);
         let minLevel = parseInt(payload['min_level'] || 0); // TODO: min/max_level not sent via client anymore??? :feelslapras:
-        let maxLevel = parseInt(payload['max_level'] || 30);
+        let maxLevel = parseInt(payload['max_level'] || 29);
         let device = await Device.getById(uuid);
 
         console.debug(`[Controller] [${uuid}] Received control request: ${type}`);
@@ -115,7 +115,7 @@ class DeviceController {
             let instanceController = InstanceController.instance.getInstanceController(uuid);
             if (!instanceController) {
                 console.error(`[Controller] [${uuid}] Failed to get instance controller`);
-                return;
+                return res.sendStatus(404);
             }
             let task = await instanceController.getTask(uuid, device.accountUsername, false);
             if (task) {
@@ -123,6 +123,7 @@ class DeviceController {
                 sendResponse(res, 'ok', task);
             } else {
                 console.warn(`[Controller] [${uuid}] No tasks available yet`);
+                return res.sendStatus(404);
             }
         } else {
             console.log(`[Controller] [${uuid}] Device not assigned any account, switching accounts...`);
@@ -135,7 +136,18 @@ class DeviceController {
     }
 
     async handleAccount(req, res, device, minLevel, maxLevel) {
+        if (device) {
+            let instanceController = InstanceController.instance.getInstanceController(device.uuid);
+
+            if (instanceController) {
+                // let instance decide min/max level instead of client
+                minLevel = instanceController.minLevel;
+                maxLevel = instanceController.maxLevel;
+            }
+        }
+
         let account = await Account.getNewAccount(minLevel, maxLevel);
+
         console.log(`[Controller] [${device.uuid}] GetNewAccount: ${account ? JSON.stringify(account) : null}`);
         if (device && !account) {
             if (device.accountUsername) {
