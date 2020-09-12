@@ -3,8 +3,20 @@
 const Pokemon = require('../../models/pokemon.js');
 const GeofenceService = require('../../services/geofence.js');
 
+/**
+ * IV instance controller class
+ */
 class IVInstanceController {
-    
+
+    /**
+     * Instantiate a new IVInstanceController object
+     * @param {*} name IV instance name
+     * @param {*} polygon Polygon the IV instance should respect
+     * @param {*} pokemonList Valid pokemon list found within IV instance
+     * @param {*} minLevel Minimum IV account level required
+     * @param {*} maxLevel Maximum IV account level required
+     * @param {*} ivQueueLimit Maximum limited in IV queue
+     */
     constructor(name, polygon, pokemonList, minLevel, maxLevel, ivQueueLimit) {
         this.name = name;
         this.polygon = polygon;
@@ -39,16 +51,13 @@ class IVInstanceController {
                     return;
                 }
             }
-            let success = false;
             let pokemonReal;
-            while (!success) {
-                try {
-                    pokemonReal = await Pokemon.getById(first.pokemon.id);
-                } catch (err) {
-                    console.error('[IVController] Error:', err);
-                    if (this.shouldExit) {
-                        return;
-                    }
+            try {
+                pokemonReal = await Pokemon.getById(first.pokemon.id);
+            } catch (err) {
+                console.error('[IVController] Error:', err);
+                if (this.shouldExit) {
+                    return;
                 }
             }
             if (pokemonReal) {
