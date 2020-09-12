@@ -8,10 +8,10 @@ const app = express();
 
 const config = require('./config.json');
 const AssignmentController = require('./controllers/assignment-controller.js');
-const RouteController = require('./routes/index.js');
+const DeviceController = require('./routes/index.js');
 const apiRoutes = require('./routes/api.js');
 const uiRoutes = require('./routes/ui.js');
-const routes = new RouteController();
+const routes = new DeviceController();
 
 (async () => {
     // View engine

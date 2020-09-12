@@ -5,12 +5,12 @@ const Account = require('../models/account.js');
 const Device = require('../models/device.js');
 
 /**
- * RouteController class
+ * DeviceController class
  */
-class RouteController {
+class DeviceController {
 
     /**
-     * Initialize new RouteController object.
+     * Initialize new DeviceController object.
      */
     constructor() {
     }
@@ -252,4 +252,4 @@ const sendResponse = (res, status, data) => {
     });
 };
 
-module.exports = RouteController;
+module.exports = DeviceController;
