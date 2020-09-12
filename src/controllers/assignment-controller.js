@@ -20,11 +20,11 @@ class AssignmentController {
         if (!this.initialized) {
             console.log('[AssignmentController] Starting AssignmentController...');
             this.initialized = true;
-            setInterval(() => this.checkAssignments(), 5000);
+            setInterval(async () => await this.checkAssignments(), 5000);
         }
     }
 
-    checkAssignments() {
+    async checkAssignments() {
         let now = this.todaySeconds();
         if (this.lastUpdate === -2) {
             // TODO: Sleep 5 seconds
@@ -38,7 +38,7 @@ class AssignmentController {
         for (let i = 0; i < assignments.length; i++) {
             let assignment = assignments[i];
             if (assignment.enabled && assignment.time !== 0 && now > assignment.time && this.lastUpdate < assignment.time) {
-                this.triggerAssignment(assignment);
+                await this.triggerAssignment(assignment);
             }
         }
         // TODO: Sleep 5 seconds

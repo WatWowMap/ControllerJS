@@ -478,6 +478,7 @@ class AutoInstanceController {
             try {
                 await Pokestop.clearQuests(ids);
             } catch (err) {
+                console.error(`[AutoInstanceController] [${this.name} Failed to clear quests:`, err);
                 if (this.shouldExit) {
                     return;
                 }

@@ -15,9 +15,9 @@ Device controller alternative to [RealDeviceMap](https://github.com/RealDeviceMa
 5.) Run `npm run create-locales` to create locale translation files  
 6.) Run `npm run start` (Database tables will be created if they don't exist)  
 7.) Point `backend_url` config property in [DeviceConfigManager](https://github.com/versx/DeviceConfigManager) to `http://dataparser_ip:9002`  
-8.) Import your existing `RDM` instances to your ControllerJS/DataParser `instances` table (replace testdb with database name and replace rdmdb with RDM's database name):  
+8.) Import your existing `RDM` instances to your ControllerJS/DataParser `instance` table (replace `bjsdb` with database name for Controller/DataParser) and replace `rdmdb` with your existing RDM's database name):  
 ```
-INSERT INTO testdb.instance (name, type, data)
+INSERT INTO bjsdb.instance (name, type, data)
 SELECT name, type, data FROM rdmdb.instance;
 ```
 9.) Visit `http://controllerip:9002` to add accounts, assign devices, or manage instances and auto-assignments  
@@ -39,7 +39,7 @@ SELECT name, type, data FROM rdmdb.instance;
         // Database password for authentication
         "password": "pass123",
         // Database name to write data to
-        "database": "rdmdb",
+        "database": "bjsdb",
         // Database character set to use
         "charset": "utf8mb4"
     },

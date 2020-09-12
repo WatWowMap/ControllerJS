@@ -626,6 +626,19 @@ const addAssignmentPost = async (req, res) => {
         return;
     }
 
+    if (devices.filter(x => x.uuid === selectedDevice) === 0) {
+        res.render('assignment-add', {
+            error: 'Internal Server Error.', // Device doesn't exist
+            show_error: true
+        });
+    }
+    if (instances.filter(x => x.name === selectedInstance) === 0) {
+        res.render('assignment-add', {
+            error: 'Internal Server Error.', // Instance doesn't exist
+            show_error: true
+        });
+    }
+
     let timeInt;
     if (!time) {
         timeInt = 0;
