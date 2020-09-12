@@ -20,7 +20,7 @@ class IVInstanceController {
     constructor(name, polygon, pokemonList, minLevel, maxLevel, ivQueueLimit) {
         this.name = name;
         this.polygon = polygon;
-        this.pokemonList = pokemonList,
+        this.pokemonList = pokemonList;
         this.minLevel = minLevel;
         this.maxLevel = maxLevel;
         this.ivQueueLimit = ivQueueLimit || 100;

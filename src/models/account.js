@@ -10,7 +10,7 @@ const db = new MySQLConnector(config.db);
 class Account {
 
     /**
-     * Initalize new Account object.
+     * Initialize new Account object.
      * @param username 
      * @param password 
      * @param firstWarningTimestamp 
@@ -80,9 +80,40 @@ class Account {
     }
 
     /**
+     * @param results
+     * @returns {Account|null}
+     */
+    static createFromDbResults(results) {
+        if (results && results.length > 0) {
+            const result = results[0];
+            return new Account(
+              result.username,
+              result.password,
+              result.first_warning_timestamp,
+              result.failed_timestamp,
+              result.failed,
+              result.level,
+              result.last_encounter_lat,
+              result.last_encounter_lon,
+              result.last_encounter_time,
+              result.spins,
+              result.tutorial,
+              result.creation_timestamp_ms,
+              result.warn,
+              result.warn_expire_ms,
+              result.warn_message_acknowledged,
+              result.suspended_message_acknowledged,
+              result.was_suspended,
+              result.banned
+            );
+        }
+        return null;
+    }
+
+    /**
      * Get new account between minimum and maximum level.
-     * @param minLevel 
-     * @param maxLevel 
+     * @param minLevel
+     * @param maxLevel
      */
     static async getNewAccount(minLevel, maxLevel) {
         let sql = `
@@ -98,34 +129,12 @@ class Account {
         `;
         let results = await db.query(sql, [minLevel, maxLevel])
             .then(x => x)
-            .catch(err => { 
+            .catch(err => {
                 console.error('[Account] Failed to get new Account', err);
                 return null;
             });
-        if (results && results.length > 0) {
-            const result = results[0];
-            return new Account(
-                result.username,
-                result.password,
-                result.first_warning_timestamp,
-                result.failed_timestamp,
-                result.failed,
-                result.level,
-                result.last_encounter_lat,
-                result.last_encounter_lon,
-                result.last_encounter_time,
-                result.spins,
-                result.tutorial,
-                result.creation_timestamp_ms,
-                result.warn,
-                result.warn_expire_ms,
-                result.warn_message_acknowledged,
-                result.suspended_message_acknowledged,
-                result.was_suspended,
-                result.banned
-            );
-        }
-        return null;
+
+        return Account.createFromDbResults(results);
     }
 
     /**
@@ -149,30 +158,8 @@ class Account {
                 console.error('[Account] Failed to get Account with username', username, 'Error:', err);
                 return null;
             });
-        if (results && results.length > 0) {
-            const result = results[0];
-            return new Account(
-                result.username,
-                result.password,
-                result.first_warning_timestamp,
-                result.failed_timestamp,
-                result.failed,
-                result.level,
-                result.last_encounter_lat,
-                result.last_encounter_lon,
-                result.last_encounter_time,
-                result.spins,
-                result.tutorial,
-                result.creation_timestamp_ms,
-                result.warn,
-                result.warn_expire_ms,
-                result.warn_message_acknowledged,
-                result.suspended_message_acknowledged,
-                result.was_suspended,
-                result.banned
-            );
-        }
-        return null;
+
+        return Account.createFromDbResults(results);
     }
 
     /**
