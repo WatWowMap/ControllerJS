@@ -27,7 +27,7 @@ class DeviceController {
         //let username = payload['username'];
         //let tutorial = parseInt(payload['tutorial'] || 0);
         let minLevel = parseInt(payload['min_level'] || 0); // TODO: min/max_level not sent via client anymore??? :feelslapras:
-        let maxLevel = parseInt(payload['max_level'] || 30);
+        let maxLevel = parseInt(payload['max_level'] || 29);
         let device = await Device.getById(uuid);
 
         console.debug(`[Controller] [${uuid}] Received control request: ${type}`);
@@ -136,6 +136,7 @@ class DeviceController {
 
     async handleAccount(req, res, device, minLevel, maxLevel) {
         let account = await Account.getNewAccount(minLevel, maxLevel);
+
         console.log(`[Controller] [${device.uuid}] GetNewAccount: ${account ? JSON.stringify(account) : null}`);
         if (device && !account) {
             if (device.accountUsername) {
