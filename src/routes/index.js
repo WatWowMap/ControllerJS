@@ -135,6 +135,16 @@ class DeviceController {
     }
 
     async handleAccount(req, res, device, minLevel, maxLevel) {
+        if (device) {
+            let instanceController = InstanceController.instance.getInstanceController(device.uuid);
+
+            if (instanceController) {
+                // let instance decide min/max level instead of client
+                minLevel = instanceController.minLevel;
+                maxLevel = instanceController.maxLevel;
+            }
+        }
+
         let account = await Account.getNewAccount(minLevel, maxLevel);
 
         console.log(`[Controller] [${device.uuid}] GetNewAccount: ${account ? JSON.stringify(account) : null}`);
