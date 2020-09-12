@@ -13,51 +13,53 @@ const apiRoutes = require('./routes/api.js');
 const uiRoutes = require('./routes/ui.js');
 const routes = new RouteController();
 
-// View engine
-app.set('view engine', 'mustache');
-app.set('views', path.resolve(__dirname, 'views'));
-app.engine('mustache', mustacheExpress());
+(async () => {
+    // View engine
+    app.set('view engine', 'mustache');
+    app.set('views', path.resolve(__dirname, 'views'));
+    app.engine('mustache', mustacheExpress());
 
-// Static paths
-app.use(express.static(path.resolve(__dirname, '../static')));
+    // Static paths
+    app.use(express.static(path.resolve(__dirname, '../static')));
 
-// Body parsing middleware
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+    // Body parsing middleware
+    app.use(express.json({ limit: '50mb' }));
+    app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
-// Initialize localzation handler
-i18n.configure({
-    locales:['en', 'es', 'de'],
-    // TODO: Why does it look for .js translation files??!?!!
-    extension: '.json',
-    syncFiles: true,
-    directory: path.resolve(__dirname, '../static/locales')
-});
-app.use(i18n.init);
+    // Initialize localzation handler
+    i18n.configure({
+        locales:['en', 'es', 'de'],
+        // TODO: Why does it look for .js translation files??!?!!
+        extension: '.json',
+        syncFiles: true,
+        directory: path.resolve(__dirname, '../static/locales')
+    });
+    app.use(i18n.init);
 
-// Register helper as a locals function wrroutered as mustache expects
-app.use((req, res, next) => {
-    // Mustache helper
-    res.locals.__ = () => {
-        /* eslint-disable no-unused-vars */
-        return (text, render) => {
-        /* eslint-enable no-unused-vars */
-            return i18n.__.routerly(req, arguments);
+    // Register helper as a locals function wrroutered as mustache expects
+    app.use((req, res, next) => {
+        // Mustache helper
+        res.locals.__ = () => {
+            /* eslint-disable no-unused-vars */
+            return (text, render) => {
+            /* eslint-enable no-unused-vars */
+                return i18n.__.routerly(req, arguments);
+            };
         };
-    };
-    next();
-});
+        next();
+    });
 
-// Set locale
-i18n.setLocale(config.locale);
+    // Set locale
+    i18n.setLocale(config.locale);
 
-// Set HTTP routes
-app.post(['/controler', '/controller'], async (req, res) => await routes.handleControllerData(req, res));
-app.use('/', uiRoutes);
-app.use('/api', apiRoutes);
+    // Set HTTP routes
+    app.post(['/controler', '/controller'], async (req, res) => await routes.handleControllerData(req, res));
+    app.use('/', uiRoutes);
+    app.use('/api', apiRoutes);
 
-// Start HTTP listener
-app.listen(config.port, config.host, () => console.log(`Listening on ${config.host}:${config.port}...`));
+    // Start HTTP listener
+    app.listen(config.port, config.host, () => console.log(`Listening on ${config.host}:${config.port}...`));
 
-// Start assignment controller
-AssignmentController.instance.setup();
+    // Start assignment controller
+    await AssignmentController.instance.setup();
+})();
