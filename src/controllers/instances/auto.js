@@ -8,8 +8,6 @@ const Account = require('../../models/account.js');
 const Cell = require('../../models/cell.js');
 const Pokestop = require('../../models/pokestop.js');
 
-const ClearQuestsInterval = 60 * 1000; // every minute
-
 const AutoType = {
     Quest: 'quest'
 };
@@ -91,9 +89,22 @@ class AutoInstanceController {
         this.bootstrap()
             .then(x => x)
             .catch(err => {
-            console.error('[AutoInstanceController] Failed to bootstrap instance:', this.name, err);
+                console.error('[AutoInstanceController] Failed to bootstrap instance:', this.name, err);
             });
-        this.clearQuestsTimer = setInterval(() => this.clearQuests(), ClearQuestsInterval);
+        this.setClearQuestsTimer();
+    }
+
+    setClearQuestsTimer() {
+        let date = new Date();
+        // TODO: timeZone
+        let hour = date.getHours();
+        let minute = date.getMinutes();
+        let second = date.getSeconds();
+        let timeLeftSeconds = (23 - hour) * 3600 + (59 - minute) * 60 + (60 - second);
+        let at = new Date(date.getTime() + (timeLeftSeconds * 1000));
+        console.debug(`[AutoInstanceController] [${this.name}] Clearing Quests in ${timeLeftSeconds.toLocaleString()}s at ${at.toLocaleString()} (Currently: ${date.toLocaleString()})`);
+
+        this.clearQuestsTimer = setInterval(() => this.clearQuests(), timeLeftSeconds * 1000);
     }
 
     async bootstrap() {
@@ -455,36 +466,28 @@ class AutoInstanceController {
     }
 
     async clearQuests() {
-        let date = new Date();
-        // TODO: timeZone
-        let hour = date.getHours();
-        let minute = date.getMinutes();
-        let second = date.getSeconds();
-        let timeLeft = (23 - hour) * 3600 + (59 - minute) * 60 + (60 - second);
-        let at = new Date(date.getTime() + (timeLeft * 1000));
-        console.debug(`[AutoInstanceController] [${this.name}] Clearing Quests in ${timeLeft.toLocaleString()}s at ${at.toLocaleString()} (Currently: ${date.toLocaleString()})`);
+        clearInterval(this.clearQuestsTimer);
+        this.setClearQuestsTimer();
 
-        if (timeLeft <= 0) {
+        if (this.shouldExit) {
+            return;
+        }
+        if (!this.allStops || this.allStops.length === 0) {
+            console.warn(`[AutoInstanceController] [${this.name}] Tried clearing quests but no pokestops.`);
+            return;
+        }
+        console.debug(`[AutoInstanceController] [${this.name}] Getting pokestop ids`);
+        let ids = this.allStops.map(x => x.id);
+        console.debug(`[AutoInstanceController] [${this.name}] Clearing Quests for ids: ${ids}.`);
+        try {
+            await Pokestop.clearQuests(ids);
+        } catch (err) {
+            console.error(`[AutoInstanceController] [${this.name} Failed to clear quests:`, err);
             if (this.shouldExit) {
                 return;
             }
-            if (!this.allStops || this.allStops.length === 0) {
-                console.warn(`[AutoInstanceController] [${this.name}] Tried clearing quests but no pokestops.`);
-                return;
-            }
-            console.debug(`[AutoInstanceController] [${this.name}] Getting pokestop ids`);
-            let ids = this.allStops.map(x => x.id);
-            console.debug(`[AutoInstanceController] [${this.name}] Clearing Quests for ids: ${ids}.`);
-            try {
-                await Pokestop.clearQuests(ids);
-            } catch (err) {
-                console.error(`[AutoInstanceController] [${this.name} Failed to clear quests:`, err);
-                if (this.shouldExit) {
-                    return;
-                }
-            }
-            this.update();
         }
+        await this.update();
     }
 }
 
