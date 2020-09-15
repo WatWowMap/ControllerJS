@@ -10,10 +10,10 @@ const InstanceType = require('../data/instance-type.js');
 const Account = require('../models/account.js');
 const Assignment = require('../models/assignment.js');
 const Device = require('../models/device.js');
+const { Geofence, GeofenceType } = require('../models/geofence.js');
 const Instance = require('../models/instance.js');
 const Pokestop = require('../models/pokestop.js');
 const utils = require('../services/utils.js');
-const { nearest } = require('@turf/turf');
 
 // Main dashboard route
 router.get(['/', '/index'], async (req, res) => {
@@ -248,7 +248,20 @@ router.use('/instance/add', async (req, res) => {
         const data = defaultData;
         data.spin_limit = 3500;
         data.iv_queue_limit = 100;
+        data.min_level = 0;
+        data.max_level = 29;
         data.nothing_selected = true;
+        let geofences = await Geofence.getAll();
+        let geofenceData = [];
+        for (let i = 0; i < geofences.length; i++) {
+            const geofence = geofences[i];
+            geofenceData.push({
+                'name': geofence.name,
+                'type': geofence.type,
+                'selected': false
+            });
+        }
+        data['geofences'] = geofenceData;
         res.render('instance-add', data);
     }
 });
@@ -267,45 +280,26 @@ router.use('/instance/edit/:name', async (req, res) => {
         const data = defaultData;
         const oldInstance = await Instance.getByName(name);
         if (oldInstance) {
-            let areaString = '';
             let oldInstanceData = oldInstance.data;
-            switch (oldInstance.type) {
-                case InstanceType.AutoQuest:
-                case InstanceType.PokemonIV:
-                    let areaType2 = oldInstanceData['area'];
-                    if (areaType2) {
-                        let index = 1;
-                        areaType2.forEach(geofence => {
-                            areaString += `[Geofence ${index}]\n`;
-                            index++;
-                            geofence.forEach(coordLine => {
-                                let lat = coordLine['lat'];
-                                let lon = coordLine['lon'];
-                                areaString += `${lat},${lon}\n`;
-                            });
-                        });
-                    }
-                    break;
-                default:
-                    let areaType1 = oldInstanceData['area'];
-                    if (areaType1) {
-                        areaType1.forEach(coordLine => {
-                            let lat = coordLine['lat'];
-                            let lon = coordLine['lon'];
-                            areaString += `${lat},${lon}\n`;
-                        });
-                    }
-                    break;
-            }
-
             data['old_name'] = oldInstance.name;
             data['name'] = oldInstance.name;
-            data['area'] = areaString;
+            data['geofence'] = oldInstance.geofence;
             data['min_level'] = oldInstanceData['min_level'] || 0;
             data['max_level'] = oldInstanceData['max_level'] || 29;
             data['timezone_offset'] = oldInstanceData['timezone_offset'] || 0;
             data['iv_queue_limit'] = oldInstanceData['iv_queue_limit'] || 100;
             data['spin_limit'] = oldInstanceData['spin_limit'] || 500;
+            let geofences = await Geofence.getAll();
+            let geofenceData = [];
+            for (let i = 0; i < geofences.length; i++) {
+                const geofence = geofences[i];
+                geofenceData.push({
+                    'name': geofence.name,
+                    'type': geofence.type,
+                    'selected': oldInstance.geofence === geofence.name
+                });
+            }
+            data['geofences'] = geofenceData;
             let pokemonIDs = oldInstanceData['pokemon_ids'];
             if (pokemonIDs) {
                 let text = pokemonIDs.join('\n');
@@ -326,9 +320,6 @@ router.use('/instance/edit/:name', async (req, res) => {
                     break;
                 case InstanceType.PokemonIV:
                     data['pokemon_iv_selected'] = true;
-                    break;
-                case InstanceType.GatherToken:
-                case InstanceType.Leveling:
                     break;                
             }
         }
@@ -341,6 +332,130 @@ router.get('/instance/ivqueue/:name', (req, res) => {
     const data = defaultData;
     data.instance_name = instanceName;
     res.render('instance-ivqueue', data);
+});
+
+
+// Geofence routes
+router.get('/geofences', (req, res) => {
+    res.render('geofences', defaultData);
+});
+
+router.use('/geofence/add', async (req, res) => {
+    if (req.method === 'POST') {
+        let name = req.body.name;
+        let type = req.body.type;
+        let area = (req.body.area || '').replace('<br>', '').replace('\r\n', '\n');
+        let coordArray = [];
+        switch (type) {
+            case GeofenceType.Circle:
+                coordArray = Geofence.areaToCirclePoints(area);
+                break;
+            case GeofenceType.Geofence:
+                coordArray = Geofence.areaToGeofences(area);
+                break;
+        }
+        if (coordArray.length === 0) {
+            res.render('geofence-add', {
+                error: 'Failed to parse coords.',
+                show_error: true
+            });
+            return;
+        }
+        let geofence = new Geofence(name, type, { area: coordArray });
+        try {
+            await geofence.create();
+        } catch (err) {
+            res.render('geofence-add', {
+                error: 'Failed to create geofence. Does this geofence already exist?',
+                show_error: true
+            });
+            return;
+        }
+        res.redirect('/geofences');
+    } else {
+        const data = defaultData;
+        data.nothing_selected = true;
+        res.render('geofence-add', data);
+    }
+});
+
+router.use('/geofence/edit/:name', async (req, res) => {
+    const oldName = req.params.name;
+    if (req.method === 'POST') {
+        if (req.body.delete) {
+            await Geofence.deleteByName(oldName);
+            res.redirect('/geofences');
+        } else {
+            await editGeofencePost(req, res);
+        }
+    } else {
+        // Load geofence from database
+        let oldGeofence;
+        try {
+            oldGeofence = await Geofence.getByName(oldName);
+        } catch (err) {
+            res.render('geofence-edit', {
+                show_error: true,
+                error: 'Internal Server Error'
+            });
+            return;
+        }
+        if (!oldGeofence) {
+            res.render('geofence-edit', {
+                show_error: true,
+                error: 'Geofence Not Found'
+            });
+            return;
+        } else {
+            let areaString = '';
+            let area = oldGeofence.data['area'];
+            // Check if geofence or circle
+            if (oldGeofence.type === GeofenceType.Circle) {
+                for (let i = 0; i < area.length; i++) {
+                    const coordLine = area[i];
+                    let lat = coordLine['lat'];
+                    let lon = coordLine['lon'];
+                    areaString += `${lat},${lon}\n`;
+                }
+            } else if (oldGeofence.type === GeofenceType.Geofence) {
+                let index = 1;
+                for (let i = 0; i < area.length; i++) {
+                    const geofence = area[i];
+                    areaString += `[Geofence ${index}]\n`;
+                    index++;
+                    for (let j = 0; j < geofence.length; j++) {
+                        const coordLine = geofence[j];
+                        if (!coordLine) {
+                            continue;
+                        }
+                        let lat = coordLine['lat'];
+                        let lon = coordLine['lon'];
+                        areaString += `${lat},${lon}\n`;
+                    }
+                }
+            } else {
+                res.render('geofence-edit', {
+                    show_error: true,
+                    error: 'Invalid Geofence Type'
+                });
+                return;
+            }
+            const data = defaultData;
+            data['name'] = oldGeofence.name;
+            data['old_name'] = oldGeofence.name;
+            data['type'] = oldGeofence.type;
+            data['area'] = areaString;
+            switch (oldGeofence.type) {
+                case GeofenceType.Circle:
+                    data['circle_selected'] = true;
+                    break;
+                case GeofenceType.Geofence:
+                    data['geofence_selected'] = true;
+                    break;
+            }            
+            res.render('geofence-edit', data);
+        }
+    }
 });
 
 
@@ -416,9 +531,7 @@ const addInstancePost = async (req, res) => {
     let data = {};
     let instanceName = req.params.name;
     let name = req.body.name;
-    let area = req.body.area
-        .replace('<br>', '\n')
-        .replace('\r\n', '\n');
+    let geofence = req.body.geofence;
     let minLevel = parseInt(req.body.min_level || 0);
     let maxLevel = parseInt(req.body.max_level || 29);
     let timezoneOffset = parseInt(req.body.timezone_offset || 0);
@@ -479,69 +592,6 @@ const addInstancePost = async (req, res) => {
         return;
     }
 
-    let newCoords;
-    if (type && type === InstanceType.CirclePokemon || type === InstanceType.CircleRaid || type === InstanceType.SmartCircleRaid) {
-        let coords = [];
-        let areaRows = area.split('\n');
-        areaRows.forEach(areaRow => {
-            let rowSplit = areaRow.split(',');
-            if (rowSplit.length === 2) {
-                let lat = parseFloat(rowSplit[0].trim());
-                let lon = parseFloat(rowSplit[1].trim());
-                if (lat && lon) {
-                    coords.push({ lat, lon });
-                }
-            }
-        });
-
-        if (coords.length === 0) {
-            res.render('instance-add', {
-                error: 'Failed to parse coords.',
-                show_error: true
-            });
-            return;
-        }
-        newCoords = coords
-    } else if (type && type === InstanceType.AutoQuest || type === InstanceType.PokemonIV) {
-        let coordArray = [];
-        let areaRows = area.split('\n');
-        let currentIndex = 0;
-        areaRows.forEach(areaRow => {
-            let rowSplit = areaRow.split(',');
-            if (rowSplit.length === 2) {
-                let lat = parseFloat(rowSplit[0].trim());
-                let lon = parseFloat(rowSplit[1].trim());
-                if (lat && lon) {
-                    while (coordArray.length !== currentIndex + 1) {
-                        coordArray.push([]);
-                    }
-                    coordArray[currentIndex].push({ lat, lon });
-                }
-            } else if (areaRow.includes('[') && 
-                       areaRow.includes(']') &&
-                       coordArray.length > currentIndex && 
-                       coordArray[currentIndex].length !== 0) {
-                currentIndex++;
-            }
-        });
-
-        if (coordArray.length === 0) {
-            res.render('instance-add', {
-                error: 'Failed to parse coords.',
-                show_error: true
-            });
-            return;
-        }
-
-        newCoords = coordArray;
-    } else {
-        res.render('instance-add', {
-            error: 'Invalid Request.',
-            show_error: true
-        });
-        return;
-    }
-
     if (instanceName) {
         // Update existing instance
         let oldInstance;
@@ -561,7 +611,7 @@ const addInstancePost = async (req, res) => {
             let oldInstanceData = {};
             oldInstance.name = name;
             oldInstance.type = type;
-            oldInstanceData['area'] = newCoords;
+            oldInstance.geofence = geofence;
             oldInstanceData['timezone_offset'] = timezoneOffset;
             oldInstanceData['min_level'] = minLevel;
             oldInstanceData['max_level'] = maxLevel;
@@ -577,12 +627,11 @@ const addInstancePost = async (req, res) => {
             } catch (err) {
                 console.error('[UI] Failed to update existing instance:', err);
             }
-            InstanceController.instance.reloadInstance(oldInstance, instanceName);
+            await InstanceController.instance.reloadInstance(oldInstance, instanceName);
         }
     } else {
         // Create new instance
         let instanceData = {};
-        instanceData['area'] = newCoords;
         instanceData['timezone_offset'] = timezoneOffset;
         instanceData['min_level'] = minLevel;
         instanceData['max_level'] = maxLevel;
@@ -594,7 +643,7 @@ const addInstancePost = async (req, res) => {
         }
         
         try {
-            let instance = new Instance(name, type, instanceData);
+            let instance = new Instance(name, type, instanceData, geofence);
             await instance.save();
             InstanceController.instance.addInstance(instance);
         } catch (err) {
@@ -791,6 +840,67 @@ const editAssignmentPost = async (req, res) => {
         return;
     }
     res.redirect('/assignments');
+};
+
+const editGeofencePost = async (req, res) => {
+    const oldName = req.params.name;
+    let name = req.body.name;
+    let type = req.body.type || '';
+    let area = req.body.area.replace('<br>', '').replace('\r\n', '\n');
+    /*
+    else {
+        data["show_error"] = true
+        data["error"] = "Invalid Request."
+        return data
+    */
+    
+    let newCoords = [];
+    switch (type) {
+        case GeofenceType.Circle:
+            newCoords = Geofence.areaToCirclePoints(area);
+            break;
+        case GeofenceType.Geofence:
+            newCoords = Geofence.areaToGeofences(area)
+            break;
+    }
+    if (newCoords.length === 0) {
+        res.render('geofence-edit', {
+            show_error: true,
+            error: 'Failed to parse coords.'
+        });
+        return;
+    }
+    
+    let oldGeofence;
+    try {
+        oldGeofence = await Geofence.getByName(oldName);
+    } catch (err) {
+        res.render('geofence-edit', {
+            show_error: true,
+            error: 'Failed to update geofence. Is the name unique?'
+        });
+        return;
+    }
+    if (!oldGeofence) {
+        res.render('geofence-edit', {
+            show_error: true,
+            error: 'Geofence Not Found'
+        });
+        return;
+    } else {
+        oldGeofence.name = name;
+        oldGeofence.type = type;
+        oldGeofence.data['area'] = newCoords;
+        try {
+            await oldGeofence.save(oldName);
+        } catch {
+            res.render('geofence-edit', {
+                show_error: true,
+                error: 'Failed to update geofence. Is the name unique?'
+            });
+        }
+        res.redirect('/geofences');
+    }
 };
 
 module.exports = router;

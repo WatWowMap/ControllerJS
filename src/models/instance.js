@@ -1,7 +1,6 @@
 'use strict';
 
 const config = require('../config.json');
-const InstanceType = require('../data/instance-type.js');
 const MySQLConnector = require('../services/mysql.js');
 const db = new MySQLConnector(config.db);
 
@@ -13,10 +12,11 @@ class Instance {
      * @param type Type of instance.
      * @param data Instance data containing area coordinates, minimum and maximum account level, etc.
      */
-    constructor(name, type, data, count = 0) {
+    constructor(name, type, data, geofence, count = 0) {
         this.name = name;
         this.type = type;
         this.data = data;
+        this.geofence = geofence;
         this.count = count;
     }
 
@@ -25,7 +25,7 @@ class Instance {
      */
     static async getAll() {
         let sql = `
-        SELECT name, type, data, count
+        SELECT name, type, data, geofence, count
         FROM instance AS inst
         LEFT JOIN (
             SELECT COUNT(instance_name) AS count, instance_name
@@ -47,6 +47,7 @@ class Instance {
                     result.name,
                     result.type,
                     JSON.parse(result.data),
+                    result.geofence,
                     result.count || 0
                 );
                 instances.push(instance);
@@ -60,7 +61,7 @@ class Instance {
      */
     static async getByName(name) {
         let sql = `
-        SELECT name, type, data
+        SELECT name, type, data, geofence
         FROM instance
         WHERE name = ?
         `;
@@ -76,7 +77,8 @@ class Instance {
             return new Instance(
                 result.name,
                 result.type,
-                JSON.parse(result.data)
+                JSON.parse(result.data),
+                result.geofence
             );
         }
         return null;
@@ -98,12 +100,13 @@ class Instance {
 
     async save() {
         let sql = `
-        INSERT INTO instance (name, type, data) VALUES (?, ?, ?)
+        INSERT INTO instance (name, type, data, geofence) VALUES (?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
             type=VALUES(type),
-            data=VALUES(data)
+            data=VALUES(data),
+            geofence=VALUES(geofence)
         `;
-        let args = [this.name, this.type, JSON.stringify(this.data || {})];
+        let args = [this.name, this.type, JSON.stringify(this.data || {}), this.geofence];
         try {
             let results = await db.query(sql, args);
             //console.log('[Instance] Save:', results);

@@ -3,6 +3,7 @@
 const AssignmentController = require('./assignment-controller.js');
 const InstanceType = require('../data/instance-type.js');
 const Device = require('../models/device.js');
+const { GeofenceType, Geofence } = require('../models/geofence.js');
 const Instance = require('../models/instance.js');
 const { AutoInstanceController, AutoType } = require('./instances/auto.js');
 const { CircleInstanceController, CircleType } = require('./instances/circle.js');
@@ -31,7 +32,7 @@ class InstanceController {
         for (let i = 0; i < instances.length; i++) {
             let inst = instances[i];
             console.log(`[InstanceController] Starting ${inst.name}...`);
-            this.addInstance(inst);
+            await this.addInstance(inst);
             console.log(`[InstanceController] Started ${inst.name}`);
             let filtered = devices.filter(x => x.instanceName === inst.name);
             for (let j = 0; j < filtered.length; j++) {
@@ -70,17 +71,21 @@ class InstanceController {
         return this.instances[name];
     }
 
-    addInstance(instance) {
+    async addInstance(instance) {
         let instanceController;
+        let geofence = await Geofence.getByName(instance.geofence);
         switch (instance.type) {
             case InstanceType.CirclePokemon:
             case InstanceType.CircleRaid:
             case InstanceType.CircleSmartRaid: {
                 let coordsArray = [];
-                if (instance.data['area']) {
-                    coordsArray = instance.data['area'];
+                let area = instance.geofence
+                    ? geofence.data['area']
+                    : instance.data['area'];
+                if (area) {
+                    coordsArray = area;
                 } else {
-                    let coords = instance.data['area'];
+                    let coords = area;
                     for (let coord in coords) {
                         coordsArray.push({ lat: coord.lat, lon: coord.lon });
                     }
@@ -103,10 +108,13 @@ class InstanceController {
             case InstanceType.AutoQuest:
             case InstanceType.PokemonIV: {
                 let areaArray = [];
-                if (instance.data['area']) {
+                let area = instance.geofence
+                    ? geofence.data['area']
+                    : instance.data['area'];
+                if (area) {
                 //    areaArray = instance.data['area']; //[[Coord]]
                 //} else {
-                    let areas = instance.data['area']; //[[[String: Double]]]
+                    let areas = area; //[[[String: Double]]]
                     for (let i = 0; i < areas.length; i++) {
                         let coords = areas[i];
                         for (let j = 0; j < coords.length; j++) {
@@ -153,7 +161,7 @@ class InstanceController {
         }
     }
 
-    reloadInstance(newInstance, oldInstanceName) {
+    async reloadInstance(newInstance, oldInstanceName) {
         let oldInstance = this.instances[oldInstanceName];
         if (oldInstance) {
             for (let uuid in this.devices) {
@@ -166,7 +174,7 @@ class InstanceController {
             this.instances[oldInstanceName].stop();
             this.instances[oldInstanceName] = null;
         }
-        this.addInstance(newInstance);
+        await this.addInstance(newInstance);
     }
 
 

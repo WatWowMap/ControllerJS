@@ -8,6 +8,7 @@ const InstanceController = require('../controllers/instance-controller.js');
 const defaultData = require('../data/default.js');
 const Assignment = require('../models/assignment.js');
 const Device = require('../models/device.js');
+const { Geofence } = require('../models/geofence.js');
 const Instance = require('../models/instance.js');
 const utils = require('../services/utils.js');
 
@@ -76,13 +77,29 @@ router.post('/instances', async (req, res) => {
     if (instances.length > 0) {
         for (let i = 0; i < instances.length; i++) {
             let instance = instances[i];
-            instance.area_count = instance.data.area.length;
+            let geofence = await Geofence.getByName(instance.geofence);
+            instance.area_count = geofence && geofence.data ? geofence.data.area.length : instance.data && instance.data.area ? instance.data.area.length : 'ERR';
             instance.type = Instance.fromString(instance.type);
+            instance.geofence = instance.geofence ? instance.geofence : '';
             instance.status = await InstanceController.instance.getInstanceStatus(instance);
             instance.buttons = `<a href="/instance/edit/${encodeURIComponent(instance.name)}" role="button" class="btn btn-primary">Edit Instance</a>`;
         }
     }
     data.instances = instances;
+    res.json({ data: data });
+});
+
+router.post('/geofences', async (req, res) => {
+    const data = {};
+    let geofences = await Geofence.getAll();
+    if (geofences.length > 0) {
+        for (let i = 0; i < geofences.length; i++) {
+            let geofence = geofences[i];
+            geofence.type = Geofence.fromString(geofence.type);
+            geofence.buttons = `<div class="btn-group" role="group"><a href="/geofence/edit/${encodeURIComponent(geofence.name)}" role="button" class="btn btn-primary">Edit</a>`;
+        }
+    }
+    data.geofences = geofences;
     res.json({ data: data });
 });
 
