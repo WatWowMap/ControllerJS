@@ -7,7 +7,8 @@
     "start": "node src/index.js",
     "create-locales": "node src/createLocales.js",
     "test": "npx eslint src/**/*.js",
-    "test-fix": "npx eslint src/**/*.js --fix"
+    "test-fix": "npx eslint src/**/*.js --fix",
+    "update": "npm install && npm update pogo-translations && npm run create-locales"
   },
   "repository": {
     "type": "git",
