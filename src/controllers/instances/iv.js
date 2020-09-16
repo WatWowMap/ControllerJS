@@ -153,7 +153,7 @@ class IVInstanceController {
         }
         let index = this.pokemonQueue.indexOf(pokemon);
         if (index) {
-            this.pokemonQueue.remove(index);
+            this.pokemonQueue.splice(index, 1);
         }
         if (!this.startDate) {
             this.startDate = new Date();

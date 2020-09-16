@@ -76,7 +76,7 @@ router.post('/instances', async (req, res) => {
     if (instances.length > 0) {
         for (let i = 0; i < instances.length; i++) {
             let instance = instances[i];
-            instance.area_count = instance.data.area.length;
+            instance.area_count = instance.data.area ? instance.data.area.length : 0;
             instance.type = Instance.fromString(instance.type);
             instance.status = await InstanceController.instance.getInstanceStatus(instance);
             instance.buttons = `<a href="/instance/edit/${encodeURIComponent(instance.name)}" role="button" class="btn btn-primary">Edit Instance</a>`;
