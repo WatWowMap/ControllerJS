@@ -29,46 +29,6 @@ class IVInstanceController {
         this.pokemonQueue = [];
         this.scannedPokemon = [];
         this.startDate = null;
-
-        this.timer = setInterval(() => this.loop(), 1000);
-    }
-
-    async loop() {
-        if (this.shouldExit) {
-            this.stop();
-            return;
-        }
-        if (this.scannedPokemon.length === 0) {
-            if (this.shouldExit) {
-                return;
-            }
-        } else {
-            let first = this.scannedPokemon.shift();
-            let timeSince = new Date() - first.date;
-            if (timeSince < 120) {
-                // TODO: Sleep 120 - timeSince
-                if (this.shouldExit) {
-                    return;
-                }
-            }
-            let pokemonReal;
-            try {
-                pokemonReal = await Pokemon.getById(first.pokemon.id);
-            } catch (err) {
-                console.error('[IVController] Error:', err);
-                if (this.shouldExit) {
-                    return;
-                }
-            }
-            if (pokemonReal) {
-                if (!pokemonReal.atkIv) {
-                    console.debug('[IVController] Checked Pokemon does not have IV');
-                    this.addPokemon(pokemonReal);
-                } else {
-                    console.debug('[IVController] Checked Pokemon has IV');
-                }
-            }
-        }
     }
 
     getTask(uuid, username, startup) {
@@ -80,6 +40,30 @@ class IVInstanceController {
             return this.getTask(uuid, username, false);
         }
         this.scannedPokemon.push({ date: new Date(), pokemon: pokemon });
+        setTimeout(() => {
+            if (this.shouldExit) {
+                return;
+            }
+            (async () => {
+                let pokemonReal;
+                try {
+                    pokemonReal = await Pokemon.getById(first.pokemon.id);
+                } catch (err) {
+                    console.error('[IVController] Error:', err);
+                }
+                if (this.shouldExit) {
+                    return;
+                }
+                if (pokemonReal) {
+                    if (!pokemonReal.atkIv) {
+                        console.debug('[IVController] Checked Pokemon does not have IV');
+                        this.addPokemon(pokemonReal);
+                    } else {
+                        console.debug('[IVController] Checked Pokemon has IV');
+                    }
+                }
+            })();
+        }, 120 * 1000);
         return {
             'area': this.name,
             'action': 'scan_iv',
@@ -110,7 +94,6 @@ class IVInstanceController {
 
     stop() {
         this.shouldExit = true;
-        clearInterval(this.timer);
     }
 
     getQueue() {
