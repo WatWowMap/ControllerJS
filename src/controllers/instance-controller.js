@@ -48,6 +48,9 @@ class InstanceController {
                 case 'pokemon_add_queue':
                     this.gotPokemon(new Pokemon(JSON.parse(message)));
                     break;
+                case 'pokemon_got_iv':
+                    this.gotIV(new Pokemon(JSON.parse(message)));
+                    break;
             }
         });
         await RedisClient.subscribe('pokemon_add_queue');
