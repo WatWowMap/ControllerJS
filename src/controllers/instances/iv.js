@@ -47,20 +47,18 @@ class IVInstanceController {
             (async () => {
                 let pokemonReal;
                 try {
-                    pokemonReal = await Pokemon.getById(first.pokemon.id);
+                    pokemonReal = await Pokemon.getById(pokemon.id);
                 } catch (err) {
                     console.error('[IVController] Error:', err);
                 }
-                if (this.shouldExit) {
+                if (this.shouldExit || !pokemonReal) {
                     return;
                 }
-                if (pokemonReal) {
-                    if (!pokemonReal.atkIv) {
-                        console.debug('[IVController] Checked Pokemon does not have IV');
-                        this.addPokemon(pokemonReal);
-                    } else {
-                        console.debug('[IVController] Checked Pokemon has IV');
-                    }
+                if (!pokemonReal.atkIv) {
+                    console.debug('[IVController] Checked Pokemon does not have IV');
+                    this.addPokemon(pokemonReal);
+                } else {
+                    console.debug('[IVController] Checked Pokemon has IV');
                 }
             })();
         }, 120 * 1000);
