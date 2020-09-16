@@ -27,7 +27,6 @@ class IVInstanceController {
         this.shouldExit = false;
         this.count = 0;
         this.pokemonQueue = [];
-        this.scannedPokemon = [];
         this.startDate = null;
     }
 
@@ -39,7 +38,6 @@ class IVInstanceController {
         if (new Date().getSeconds() - (pokemon.firstSeenTimestamp || 1) >= 600) {
             return this.getTask(uuid, username, false);
         }
-        this.scannedPokemon.push({ date: new Date(), pokemon: pokemon });
         setTimeout(() => {
             if (this.shouldExit) {
                 return;
