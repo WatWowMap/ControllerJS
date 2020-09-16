@@ -27,6 +27,7 @@ class IVInstanceController {
         this.shouldExit = false;
         this.count = 0;
         this.pokemonQueue = [];
+        this.pendingPokemon = {};
         this.startDate = null;
     }
 
@@ -38,7 +39,8 @@ class IVInstanceController {
         if (new Date().getSeconds() - (pokemon.firstSeenTimestamp || 1) >= 600) {
             return this.getTask(uuid, username, false);
         }
-        setTimeout(() => {
+        this.pendingPokemon[pokemon.id] = setTimeout(() => {
+            delete this.pendingPokemon[pokemon.id];
             if (this.shouldExit) {
                 return;
             }
@@ -102,7 +104,7 @@ class IVInstanceController {
             // Pokemon id not in pokemon IV list
             return;
         }
-        if (this.pokemonQueue.includes(pokemon)) {
+        if (this.pendingPokemon[pokemon.id] !== undefined || this.pokemonQueue.includes(pokemon)) {
             // Queue already contains pokemon
             return;
         }
@@ -132,6 +134,12 @@ class IVInstanceController {
         let index = this.pokemonQueue.indexOf(pokemon);
         if (index) {
             this.pokemonQueue.splice(index, 1);
+        } else {
+            const timeout = this.pendingPokemon[pokemon.id];
+            if (timeout) {
+                clearTimeout(timeout);
+                delete this.pendingPokemon[pokemon.id];
+            }
         }
         if (!this.startDate) {
             this.startDate = new Date();
