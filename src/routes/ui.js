@@ -230,6 +230,7 @@ router.use('/device/assign/:uuid', async (req, res) => {
                 x.selected = x.name === device.instanceName;
             });
         }
+        data.device_uuid = uuid;
         data.instances = instances || [];
         res.render('device-assign', data);
     }

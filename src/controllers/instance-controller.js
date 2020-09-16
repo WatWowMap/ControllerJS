@@ -48,9 +48,13 @@ class InstanceController {
                 case 'pokemon_add_queue':
                     this.gotPokemon(new Pokemon(JSON.parse(message)));
                     break;
+                case 'pokemon_got_iv':
+                    this.gotIV(new Pokemon(JSON.parse(message)));
+                    break;
             }
         });
         await RedisClient.subscribe('pokemon_add_queue');
+        await RedisClient.subscribe('pokemon_got_iv');
     }
 
     getInstanceController(uuid) {
@@ -236,6 +240,19 @@ class InstanceController {
                     instObj.addPokemon(pokemon);
                 } catch (err) {
                     console.error('Failed to add pokemon to IV queue:', instObj.name, err);
+                }
+            }
+        }
+    }
+
+    gotIV(pokemon) {
+        for (let inst in this.instances) {
+            let instObj = this.instances[inst];
+            if (instObj instanceof IVInstanceController) {
+                try {
+                    instObj.gotIV(pokemon);
+                } catch (err) {
+                    console.error('Failed to remove pokemon from IV queue:', instObj.name, err);
                 }
             }
         }

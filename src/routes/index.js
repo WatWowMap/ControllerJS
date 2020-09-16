@@ -82,7 +82,7 @@ class DeviceController {
             console.debug(`[Controller] [${uuid}] Device already registered`);
             let assignedInstance = device.instanceName !== undefined && device.instanceName !== null && device.instanceName !== '';
             if (!assignedInstance) {
-                console.log(`[Controller] [${uuid}] Device not assigned to an instance!`);
+                console.error(`[Controller] [${uuid}] Device not assigned to an instance!`);
             }
             sendResponse(res, 'ok', {
                 assigned: assignedInstance,
@@ -138,7 +138,6 @@ class DeviceController {
     async handleAccount(req, res, device, minLevel, maxLevel) {
         if (device) {
             let instanceController = InstanceController.instance.getInstanceController(device.uuid);
-
             if (instanceController) {
                 // let instance decide min/max level instead of client
                 minLevel = instanceController.minLevel;
@@ -147,7 +146,6 @@ class DeviceController {
         }
 
         let account = await Account.getNewAccount(minLevel, maxLevel);
-
         console.log(`[Controller] [${device.uuid}] GetNewAccount: ${account ? JSON.stringify(account) : null}`);
         if (device && !account) {
             if (device.accountUsername) {
