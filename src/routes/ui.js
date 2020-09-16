@@ -366,7 +366,7 @@ router.use('/clearquests', async (req, res) => {
 
 
 const addAccounts = (req, res) => {
-    let level = parseInt(req.body.level || 0);
+    let defaultLevel = parseInt(req.body.level || 0);
     let accounts = req.body.accounts;
     if (!accounts) {
         data['show_error'] = true;
@@ -380,16 +380,17 @@ const addAccounts = (req, res) => {
 
     let data = req.body;
     data['accounts'] = accounts;
-    data['level'] = level;
+    data['level'] = defaultLevel;
 
     let accs = [];
     let accountRows = accounts.split('\n');
     for (let i = 0; i < accountRows.length; i++) {
         let row = accountRows[i];
         let split = row.split(',');
-        if (split.length === 2) {
+        if (split.length === 2 || split.length === 3) {
             let username = split[0].trim();
             let password = split[1].trim();
+            let level = split.length === 3 ? split[2].trim() : defaultLevel;
             accs.push(new Account(username, password, null, null, null, level, null, null, null, 0, 0, null, null, null, null, null, null, null));
         }
     }
