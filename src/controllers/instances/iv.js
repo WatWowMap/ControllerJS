@@ -40,7 +40,6 @@ class IVInstanceController {
             return this.getTask(uuid, username, false);
         }
         this.pendingPokemon[pokemon.id] = setTimeout(() => {
-            delete this.pendingPokemon[pokemon.id];
             if (this.shouldExit) {
                 return;
             }
@@ -50,6 +49,8 @@ class IVInstanceController {
                     pokemonReal = await Pokemon.getById(pokemon.id);
                 } catch (err) {
                     console.error('[IVController] Error:', err);
+                } finally {
+                    delete this.pendingPokemon[pokemon.id];
                 }
                 if (this.shouldExit || !pokemonReal) {
                     return;
