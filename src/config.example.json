@@ -4,10 +4,6 @@
     "title": "ControllerJS",
     "locale" : "en",
     "style": "dark",
-    "logs": {
-        "level": 4,
-        "file": false
-    },
     "db": {
         "host": "127.0.0.1",
         "port": 3306,
@@ -15,6 +11,10 @@
         "password": "pass123",
         "database": "bjsdb",
         "charset": "utf8mb4"
+    },
+    "logs": {
+        "level": 4,
+        "file": false
     },
     "redis": {
         "host": "127.0.0.1",
