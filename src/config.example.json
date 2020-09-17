@@ -4,7 +4,10 @@
     "title": "ControllerJS",
     "locale" : "en",
     "style": "dark",
-    "logLevel": 4,
+    "logs": {
+        "level": 4,
+        "file": false
+    },
     "db": {
         "host": "127.0.0.1",
         "port": 3306,
