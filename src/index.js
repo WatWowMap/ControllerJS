@@ -12,6 +12,7 @@ const DeviceController = require('./routes/index.js');
 const apiRoutes = require('./routes/api.js');
 const uiRoutes = require('./routes/ui.js');
 const routes = new DeviceController();
+require('./services/logger.js');
 
 (async () => {
     // View engine

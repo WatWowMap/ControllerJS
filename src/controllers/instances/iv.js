@@ -62,10 +62,10 @@ class IVInstanceController {
             }
             if (pokemonReal) {
                 if (!pokemonReal.atkIv) {
-                    console.debug('[IVController] Checked Pokemon does not have IV');
+                    console.debug(`[IVController] Checked Pokemon ${pokemonReal.id} does not have IV`);
                     this.addPokemon(pokemonReal);
                 } else {
-                    console.debug('[IVController] Checked Pokemon has IV');
+                    console.debug(`[IVController] Checked Pokemon ${pokemonReal.id} has IV`);
                 }
             }
         }
