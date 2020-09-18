@@ -12,6 +12,10 @@
         "database": "bjsdb",
         "charset": "utf8mb4"
     },
+    "logs": {
+        "level": 4,
+        "file": false
+    },
     "redis": {
         "host": "127.0.0.1",
         "port": 6379,

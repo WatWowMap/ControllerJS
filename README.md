@@ -43,6 +43,21 @@ SELECT name, type, data FROM rdmdb.instance;
         // Database character set to use
         "charset": "utf8mb4"
     },
+    // Logging options
+    "logs": {
+        /** Log level to set, available options are:
+         * debug: 4
+         * log: 3
+         * info: 2
+         * warn: 1
+         * error: 0
+         * line: 1
+         * turn off all logging: -1
+         */
+        "level": 4,
+        // Enable file logging to /logs folder
+        "file": false
+    },
     // Redis server settings (used for pub/sub communication
     // between ControllerJS and DataParser)
     "redis": {
