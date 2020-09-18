@@ -133,14 +133,13 @@ class IVInstanceController {
         }
 
         let index = this.lastIndexOf(pokemon.pokemonId);
-        if (this.pokemonQueue.length >= this.ivQueueLimit && !index) {
+        if (this.pokemonQueue.length >= this.ivQueueLimit && index === null) {
             console.debug('[IVController] Queue is full!');
         } else if (this.pokemonQueue.length >= this.ivQueueLimit) {
-            // Insert pokemon at top of queue.
-            this.pokemonQueue.unshift(pokemon);
+            this.pokemonQueue.splice(index, 0, pokemon);
             // Remove last pokemon.
             this.pokemonQueue.pop();
-        } else if (index) {
+        } else if (index !== null) {
             this.pokemonQueue.splice(index, 0, pokemon);
         } else {
             this.pokemonQueue.push(pokemon);
@@ -153,7 +152,7 @@ class IVInstanceController {
         }
         let index = this.pokemonQueue.indexOf(pokemon);
         if (index) {
-            this.pokemonQueue.remove(index);
+            this.pokemonQueue.splice(index, 1);
         }
         if (!this.startDate) {
             this.startDate = new Date();

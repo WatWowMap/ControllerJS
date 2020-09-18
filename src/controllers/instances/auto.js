@@ -276,7 +276,6 @@ class AutoInstanceController {
                     let lastLon;
                     let lastTime;
                     let account;
-
                     try {
                         if (username) {
                             account = await Account.getWithUsername(username);
@@ -315,7 +314,7 @@ class AutoInstanceController {
                         let closestDistance = 10000000000000000;
                         let todayStopsC = this.todayStops;
                         if (todayStopsC.length === 0) {
-                            return null;
+                            return {};
                         }
                         for (let i = 0; i < todayStopsC.length; i++) {
                             let stop = todayStopsC[i];
@@ -328,7 +327,7 @@ class AutoInstanceController {
                         }
 
                         if (!closest) {
-                            return null;
+                            return {};
                         }
 
                         newLat = closest.lat;
@@ -355,7 +354,7 @@ class AutoInstanceController {
                     } else {
                         let stop = this.todayStops[0];
                         if (!stop) {
-                            return null;
+                            return ;
                         }
                         newLat = stop.lat;
                         newLon = stop.lon;
