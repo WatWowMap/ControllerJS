@@ -123,7 +123,15 @@ class Account {
             suspended_message_acknowledged, was_suspended, banned
         FROM account
         LEFT JOIN device ON username = account_username
-        WHERE first_warning_timestamp is NULL AND failed_timestamp is NULL and device.uuid IS NULL AND level >= ? AND level <= ? AND failed IS NULL AND (last_encounter_time IS NULL OR UNIX_TIMESTAMP() - CAST(last_encounter_time AS SIGNED INTEGER) >= 7200)
+        WHERE
+            first_warning_timestamp is NULL
+            AND failed_timestamp is NULL
+            AND device.uuid IS NULL
+            AND level >= ?
+            AND level <= ?
+            AND failed IS NULL
+            AND (last_encounter_time IS NULL OR UNIX_TIMESTAMP() - CAST(last_encounter_time AS SIGNED INTEGER) >= 7200)
+            AND spins < 3500
         ORDER BY level DESC, RAND()
         LIMIT 1
         `;

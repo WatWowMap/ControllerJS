@@ -66,6 +66,7 @@ class IVInstanceController {
                     this.addPokemon(pokemonReal);
                 } else {
                     console.debug(`[IVController] Checked Pokemon ${pokemonReal.id} has IV`);
+                    this.gotIV(pokemonReal);
                 }
             }
         }
@@ -94,13 +95,14 @@ class IVInstanceController {
     getStatus() {
         let ivh = null;
         if (this.startDate) {
-            ivh = this.count / new Date() - this.startDate * 3600;
+            ivh = (this.count / (new Date() - this.startDate)) * 3600;
+            ivh = ivh * 1000;
         }
         let ivhString;
         if (!ivh) {
             ivhString = '-';
         } else {
-            ivhString = ivh;
+            ivhString = Math.round(ivh);
         }
         return `<a href="/instance/ivqueue/${encodeURIComponent(this.name)}">Queue</a>: ${this.pokemonQueue.length}, IV/h: ${ivhString}`;
     }

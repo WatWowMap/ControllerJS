@@ -61,7 +61,7 @@ router.post('/devices', async (req, res) => {
             };
             device.last_seen = {
                 formatted: new Date(device.lastSeen * 1000).toLocaleString(),
-                sorted: device.lastSeen
+                sort: device.lastSeen
             };
             device.buttons = `<a href="/device/assign/${encodeURIComponent(device.uuid)}" role="button" class="btn btn-primary">Assign Instance</a>`;
         }

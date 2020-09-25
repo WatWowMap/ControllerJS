@@ -3,7 +3,7 @@
 const S2 = require('nodes2ts');
 const turf = require('@turf/turf');
 
-const AssignmentController = require('../assignment-controller.js');
+//const AssignmentController = require('../assignment-controller.js');
 const Account = require('../../models/account.js');
 const Cell = require('../../models/cell.js');
 const Pokestop = require('../../models/pokestop.js');
@@ -139,7 +139,7 @@ class AutoInstanceController {
                 }
             }
         }
-        console.log(`[AutoInstanceController] [${this.name}] Bootstrap Status: ${totalCount - missingCellIDs.length}/${totalCount} after ${(new Date().getSeconds() - start.getSeconds()).toFixed(2)}s)`);
+        console.log(`[AutoInstanceController] [${this.name}] Bootstrap Status: ${totalCount - missingCellIDs.length}/${totalCount} after ${(new Date().getSeconds() - start.getSeconds()).toFixed(2)}s`);
         this.bootstrapCellIDs = missingCellIDs;
         this.bootstrapTotalCount = totalCount;
     }
@@ -202,43 +202,7 @@ class AutoInstanceController {
         switch (this.type) {
             case AutoType.Quest:
                 if (this.bootstrapCellIDs.length > 0) {
-                    let target = this.bootstrapCellIDs.pop();
-                    if (target) {
-                        let cell = new S2.S2Cell(new S2.S2CellId(target));
-                        let center = cell.getCenter();
-                        let point = new S2.S2Point(center.x, center.y, center.z);
-                        let latlng = S2.S2LatLng.fromPoint(point);
-                        // Get all cells touching a 630 (-5m for error) circle at center
-                        let radians = 0.00009799064306948; // 625m
-                        let circle = new S2.S2Cap(center, (radians * radians) / 2);
-                        let coverer = new S2.S2RegionCoverer();
-                        coverer.minLevel = 15;
-                        coverer.maxLevel = 15;
-                        coverer.maxCells = 100;
-                        let cellIDs = coverer.getCoveringCells(circle);
-                        for (let i = 0; i < cellIDs.length; i++) {
-                            let cellID = cellIDs[i];
-                            let id = cellID.id.toUnsigned().toString();
-                            let index = this.bootstrapCellIDs.indexOf(id);
-                            if (index) {
-                                this.bootstrapCellIDs.splice(index, 1);
-                            }
-                        }
-                        if (this.bootstrapCellIDs.length === 0) {
-                            // TODO: await this.bootstrap(); // <--- Causes bootstrap loop for some reason
-                            //if (this.bootstrapCellIDs.length === 0) {
-                                await this.update();
-                            //}
-                        }
-                        return {
-                            'area': this.name,
-                            'action': 'scan_raid',
-                            'lat': latlng.latDegrees,
-                            'lon': latlng.lngDegrees
-                        };
-                    } else {
-                        return null;
-                    }
+                    return await this.getBootstrapTask();
                 } else {
                     if (!this.todayStops) {
                         this.todayStops = [];
@@ -267,7 +231,9 @@ class AutoInstanceController {
                             }
                         }
                         if (this.todayStops.length === 0) {
-                            AssignmentController.instance.instanceControllerDone(this.name);
+                            // TODO: AssignmentController.instance is undefined
+                            console.log(`[AutoInstanceController] [${this.name}] Instance done`);
+                            // TODO: AssignmentController.instance.instanceControllerDone(this.name);
                             return null;
                         }
                     }
@@ -294,6 +260,7 @@ class AutoInstanceController {
 
                     if (username && account) {
                         if (account.spins >= this.spinLimit) {
+                            console.warn(`[AutoInstanceController] ${username} hit max spin limit ${account.spins}/${this.spinLimit}, switching accounts...`);
                             return {
                                 'action': 'switch_account',
                                 'min_level': this.minLevel,
@@ -401,7 +368,7 @@ class AutoInstanceController {
                         }
                         if (this.todayStops.length === 0) {
                             console.log(`[AutoInstanceController] [${this.name}] Instance done`);
-                            AssignmentController.instance.instanceControllerDone(this.name);
+                            // TODO: AssignmentController.instance.instanceControllerDone(this.name);
                         }
                     }
 
@@ -417,6 +384,45 @@ class AutoInstanceController {
                     };
                 }
         }
+    }
+
+    async getBootstrapTask() {
+        let target = this.bootstrapCellIDs.pop();
+        if (target) {
+            let cell = new S2.S2Cell(new S2.S2CellId(target));
+            let center = cell.getCenter();
+            let point = new S2.S2Point(center.x, center.y, center.z);
+            let latlng = S2.S2LatLng.fromPoint(point);
+            // Get all cells touching a 630 (-5m for error) circle at center
+            let radians = 0.00009799064306948; // 625m
+            let circle = new S2.S2Cap(center, (radians * radians) / 2);
+            let coverer = new S2.S2RegionCoverer();
+            coverer.minLevel = 15;
+            coverer.maxLevel = 15;
+            coverer.maxCells = 100;
+            let cellIDs = coverer.getCoveringCells(circle);
+            for (let i = 0; i < cellIDs.length; i++) {
+                let cellID = cellIDs[i];
+                let id = cellID.id.toUnsigned().toString();
+                let index = this.bootstrapCellIDs.indexOf(id);
+                if (index) {
+                    this.bootstrapCellIDs.splice(index, 1);
+                }
+            }
+            if (this.bootstrapCellIDs.length === 0) {
+                // TODO: await this.bootstrap(); // <--- Causes bootstrap loop for some reason
+                //if (this.bootstrapCellIDs.length === 0) {
+                    await this.update();
+                //}
+            }
+            return {
+                'area': this.name,
+                'action': 'scan_raid',
+                'lat': latlng.latDegrees,
+                'lon': latlng.lngDegrees
+            };
+        }
+        return null;
     }
 
     async getStatus() {

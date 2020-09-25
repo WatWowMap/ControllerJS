@@ -26,7 +26,7 @@ class DeviceController {
         }
         //let username = payload['username'];
         //let tutorial = parseInt(payload['tutorial'] || 0);
-        let minLevel = parseInt(payload['min_level'] || 0); // TODO: min/max_level not sent via client anymore??? :feelslapras:
+        let minLevel = parseInt(payload['min_level'] || 0);
         let maxLevel = parseInt(payload['max_level'] || 29);
         let device = await Device.getById(uuid);
 
@@ -39,7 +39,7 @@ class DeviceController {
                 await this.handleHeartbeat(req, res, uuid);
                 break;
             case 'get_job':
-                await this.handleJob(req, res, uuid, device, minLevel, maxLevel);
+                await this.handleJob(req, res, uuid, device);
                 break;
             case 'get_account':
                 await this.handleAccount(req, res, device, minLevel, maxLevel);
@@ -110,28 +110,19 @@ class DeviceController {
         }
     }
 
-    async handleJob(req, res, uuid, device, minLevel, maxLevel) {
-        if (device && device.accountUsername) {
-            let instanceController = InstanceController.instance.getInstanceController(uuid);
-            if (!instanceController) {
-                console.error(`[Controller] [${uuid}] Failed to get instance controller`);
-                return res.sendStatus(404);
-            }
-            let task = await instanceController.getTask(uuid, device.accountUsername, false);
-            if (task) {
-                console.log(`[Controller] [${uuid}] Sending ${task.action} job to ${task.lat}, ${task.lon}`);
-                sendResponse(res, 'ok', task);
-            } else {
-                console.warn(`[Controller] [${uuid}] No tasks available yet`);
-                return res.sendStatus(404);
-            }
+    async handleJob(req, res, uuid, device) {
+        let instanceController = InstanceController.instance.getInstanceController(uuid);
+        if (!instanceController) {
+            console.error(`[Controller] [${uuid}] Failed to get instance controller`);
+            return res.sendStatus(404);
+        }
+        let task = await instanceController.getTask(uuid, device.accountUsername, false);
+        if (task) {
+            console.log(`[Controller] [${uuid}] Sending ${task.action} job to ${task.lat}, ${task.lon}`);
+            sendResponse(res, 'ok', task);
         } else {
-            console.log(`[Controller] [${uuid}] Device not assigned any account, switching accounts...`);
-            sendResponse(res, 'ok', {
-                'action': 'switch_account',
-                'min_level': minLevel,
-                'max_level': maxLevel
-            });
+            console.warn(`[Controller] [${uuid}] No tasks available yet`);
+            return res.sendStatus(404);
         }
     }
 

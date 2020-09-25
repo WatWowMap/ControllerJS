@@ -1,6 +1,6 @@
 'use strict';
 
-const AssignmentController = require('./assignment-controller.js');
+//const AssignmentController = require('./assignment-controller.js');
 const InstanceType = require('../data/instance-type.js');
 const Device = require('../models/device.js');
 const Instance = require('../models/instance.js');
@@ -184,7 +184,7 @@ class InstanceController {
         for (let device in this.devices.filter(x => x.instanceName === name)) {
             this.devices[device.uuid] = null;
         }
-        await AssignmentController.instance.setup();
+        // TODO: await AssignmentController.instance.setup();
     }
 
     addDevice(device) {
