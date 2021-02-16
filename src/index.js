@@ -14,6 +14,8 @@ const uiRoutes = require('./routes/ui.js');
 const routes = new DeviceController();
 require('./services/logger.js');
 
+// TODO: Fix caching of `default.js`
+
 (async () => {
     // View engine
     app.set('view engine', 'mustache');
